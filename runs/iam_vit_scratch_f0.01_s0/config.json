@@ -1,0 +1,20 @@
+{
+ "data": "iam",
+ "model": "vit",
+ "frac": 0.01,
+ "seed": 0,
+ "steps": 3000,
+ "bs": 16,
+ "lr": 0.0003,
+ "wd": 0.01,
+ "eval_every": 250,
+ "patience": 8,
+ "init": null,
+ "freeze_steps": 0,
+ "overfit": 0,
+ "tag": "scratch",
+ "workers": 6,
+ "name": "iam_vit_scratch_f0.01_s0",
+ "n_train": 65,
+ "n_classes": 80
+}

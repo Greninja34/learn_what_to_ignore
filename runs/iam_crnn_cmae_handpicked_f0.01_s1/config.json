@@ -1,0 +1,22 @@
+{
+ "data": "iam",
+ "model": "crnn",
+ "frac": 0.01,
+ "seed": 1,
+ "steps": 3000,
+ "bs": 16,
+ "lr": 0.0003,
+ "wd": 0.01,
+ "eval_every": 250,
+ "patience": 8,
+ "init": "runs/cmae_handpicked/encoder.pt",
+ "freeze_steps": 0,
+ "overfit": 0,
+ "tag": "cmae_handpicked",
+ "head": "linear",
+ "aug": "none",
+ "workers": 6,
+ "name": "iam_crnn_cmae_handpicked_f0.01_s1",
+ "n_train": 65,
+ "n_classes": 80
+}

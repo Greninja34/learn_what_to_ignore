@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Learning What to Ignore: pilot briefing for the team</title>
+<style>
+@font-face { font-family: "Segoe UI"; src: url("../fonts/segoeui.ttf"); font-weight: 400; }
+@font-face { font-family: "Segoe UI"; src: url("../fonts/segoeuisl.ttf"); font-weight: 600; }
+@font-face { font-family: "Segoe UI"; src: url("../fonts/segoeuib.ttf"); font-weight: 700; }
+@font-face { font-family: "Segoe UI"; src: url("../fonts/segoeuii.ttf"); font-weight: 400; font-style: italic; }
+@font-face { font-family: "Consolas"; src: url("../fonts/consola.ttf"); }
+@page { size: A4; margin: 17mm 17mm 16mm 17mm; }
+:root { --ink: #1c2530; --meta: #5b6876; --rule: #d8dee5; --card: #f3f6f9; --accent: #1f5fae; --accent-fill: #e6eff9;
+        --green: #23744a; --green-fill: #e6f3ea; --red: #b23a34; --red-fill: #fbeaea; }
+* { box-sizing: border-box; }
+body { font-family: "Segoe UI", sans-serif; color: var(--ink); font-size: 10.4pt; line-height: 1.45; margin: 0; }
+h1 { font-size: 21pt; line-height: 1.15; margin: 0 0 4px; font-weight: 700; }
+.sub { color: var(--meta); font-size: 10.5pt; margin: 0 0 14px; }
+h2 { font-size: 13.5pt; margin: 20px 0 7px; padding-top: 9px; border-top: 1.5px solid var(--ink); break-after: avoid; }
+h3 { font-size: 10.8pt; margin: 13px 0 4px; break-after: avoid; }
+p { margin: 0 0 7px; }
+ul, ol { margin: 0 0 7px; padding-left: 18px; }
+li { margin-bottom: 3px; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 9px; font-size: 9.6pt; break-inside: avoid; }
+th { text-align: left; background: var(--card); color: var(--meta); font-weight: 600; font-size: 8.8pt; }
+th, td { border: 1px solid var(--rule); padding: 5px 8px; vertical-align: top; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.box { border-radius: 6px; padding: 10px 13px; margin: 8px 0 10px; break-inside: avoid; }
+.box.accent { background: var(--accent-fill); border: 1px solid #b9d0ec; }
+.box.plain { background: var(--card); border: 1px solid var(--rule); }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.kicker { font-size: 8.4pt; letter-spacing: .7px; text-transform: uppercase; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+.pass, .fail { display: inline-block; font-size: 8.3pt; font-weight: 700; border-radius: 3px; padding: 0 6px; letter-spacing: .4px; }
+.pass { background: var(--green-fill); color: var(--green); }
+.fail { background: var(--red-fill); color: var(--red); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+figure { margin: 8px 0 10px; break-inside: avoid; }
+figure img { width: 100%; border: 1px solid var(--rule); border-radius: 4px; display: block; }
+figcaption { font-size: 8.8pt; color: var(--meta); margin-top: 4px; }
+code { font-family: "Consolas", monospace; font-size: 9.2pt; background: var(--card); padding: 0 3px; border-radius: 2px; }
+.small { font-size: 9pt; color: var(--meta); }
+.q { font-weight: 600; margin-bottom: 1px; }
+.pb { break-before: page; }
+</style>
+</head>
+<body>
+
+<h1>Learning What to Ignore: where we stand before the reviews</h1>
+<p class="sub">Team 147 briefing · written 10 Nov 2026 · Review 2 with the guide on Fri 13 Nov, end-semester assessment on Tue 17 Nov</p>
+
+<div class="box accent">
+<div class="kicker">The short version</div>
+<ul>
+<li><b>Everything Phase 1 promised is built:</b> data pipeline, a baseline recogniser, a tool that measures damage, seven damage models, and a first pretraining loop.</li>
+<li><b>The problem is real.</b> An industrial OCR gets 52.5% of characters wrong on medieval lines, and medium damage multiplies our baseline's error by up to 7.6.</li>
+<li><b>Pretraining does not improve accuracy yet.</b> At our small scale, no pretrained model beats plain supervised training. We say this openly at the review.</li>
+<li><b>Two results point the right way.</b> How much a model ignores a damage predicts how much that damage hurts it, and a model becomes more robust to the damage it was pretrained on.</li>
+<li><b>What we tell the panel:</b> Phase 1 is complete, the main risk is named and measured, and Phase 2 scales the pretraining up.</li>
+</ul>
+</div>
+
+<h2>1. The topic in one minute</h2>
+<p>Text recognisers read clean scans well and fail on damaged documents: darkened paper, ink showing through from the back, stains, fading, blur. Damaged collections are also where transcribed training data is scarcest.</p>
+<p>Self-supervised learning (SSL) gets around the label shortage. The model first trains on unlabelled lines: we corrupt a line, and the model has to rebuild the clean version. Whatever we corrupt, the model learns to see through. So the list of corruptions decides <b>what the model learns to ignore</b>. Today every paper picks that list by hand.</p>
+<p><b>Our idea:</b> measure the damage on real historical lines, set the corruptions from those measurements ("derived" instead of "hand-picked"), and then test whether what the model ignores predicts where it fails.</p>
+
+<table>
+<tr><th style="width:17%">Term</th><th>Meaning</th></tr>
+<tr><td>CER</td><td>Character error rate: the share of characters the model gets wrong. Lower is better.</td></tr>
+<tr><td>CRNN</td><td>Our recogniser: a CNN that reads the image, a BiLSTM that reads the sequence, and a CTC output. 7.4M parameters.</td></tr>
+<tr><td>Masked autoencoder</td><td>The pretraining method: hide or corrupt parts of a line and train the encoder to rebuild the clean line.</td></tr>
+<tr><td>Invariance</td><td>How little the encoder's features change when a line is damaged. 1 means the damage is fully ignored.</td></tr>
+<tr><td>IAM / CATMuS</td><td>IAM: clean modern English handwriting. CATMuS: real medieval Latin and French manuscript lines.</td></tr>
+</table>
+
+<h3>The three research questions</h3>
+<ol>
+<li><b>RQ1.</b> With few labels, does pretraining with derived damage beat no pretraining, plain masking and hand-picked damage?</li>
+<li><b>RQ2.</b> Does it carry over to damage, media and scripts the model never saw?</li>
+<li><b>RQ3.</b> Does a model's measured invariance to a damage predict how much that damage raises its error?</li>
+</ol>
+
+<h2>2. What the Review-1 panel asked, and how we answered</h2>
+<table>
+<tr><th style="width:30%">Panel remark (15 Oct)</th><th>What we now show</th></tr>
+<tr><td>Show that good accuracy can be achieved</td><td>Our small CRNN, trained for 50 minutes on a laptop GPU, reaches <b>9.8% CER</b> on IAM. PaddleOCR, an industrial system, gets 11.4% on the same lines.</td></tr>
+<tr><td>Make the base foundations strong</td><td>One fixed protocol for every run (line height, character set, official splits), two seeds, every number produced by a script, and pass/fail rules written down before the runs. The checks caught two bugs that would have spoiled the results.</td></tr>
+</table>
+
+<h2>3. What was built and run</h2>
+<ol>
+<li><b>Data.</b> IAM (6,482 training lines) and a Latin + French subset of CATMuS (about 25,000 training lines, 4,022 test lines from manuscripts not seen in training). 99% of CATMuS images had a black frame painted around the line; we remove it, because it was being counted as ink.</li>
+<li><b>Baseline.</b> The CRNN trained with all labels and with few labels (10% and 1% of IAM, 5% of CATMuS).</li>
+<li><b>Measuring damage.</b> A tool computes eight statistics per line (paper darkness, faint grey on the paper, unevenness, contrast, sharpness, noise, and two that reflect script, not damage).</li>
+<li><b>Damage models.</b> Seven synthetic damage types: paper tone, show-through, stains, fading, noise, blur and ink loss. Ink loss is never used in pretraining, so it serves as unseen damage.</li>
+<li><b>Derived recipe.</b> For each damage type, how often and how strongly to apply it is read off the CATMuS measurements. Result: tone on 84% of lines, show-through 89%, stains 37%, fading 26%, noise 11%, blur 5%. The hand-picked recipe applies each to 50% of lines.</li>
+<li><b>Pretraining.</b> The CRNN's CNN is pretrained to rebuild clean lines (30,000 lines, 34 minutes), then the whole CRNN is fine-tuned with few labels. Four versions are compared: no pretraining, masking only, masking + hand-picked damage, masking + derived damage.</li>
+</ol>
+<p>Before running anything we fixed four assumptions, A1 to A4, each with a pass/fail rule. Two passed and two failed.</p>
+
+<h2>4. The numbers</h2>
+
+<h3>Baselines: accuracy is achievable, and the problem is real</h3>
+<table>
+<tr><th>Test CER</th><th class="n">IAM</th><th class="n">CATMuS</th></tr>
+<tr><td>PaddleOCR PP-OCRv6, used as it comes</td><td class="n">11.4%</td><td class="n"><b>52.5%</b></td></tr>
+<tr><td>Our CRNN, all labels</td><td class="n"><b>9.8%</b></td><td class="n">20.0%</td></tr>
+<tr><td>Our CRNN, 10% of IAM labels (648 lines)</td><td class="n">19.6%</td><td class="n">–</td></tr>
+<tr><td>Our CRNN, 5% of CATMuS labels (1,188 lines)</td><td class="n">–</td><td class="n">33.6%</td></tr>
+<tr><td>Our CRNN, 1% of IAM labels (65 lines)</td><td class="n">43.3%</td><td class="n">–</td></tr>
+</table>
+<p class="small">Few-label rows are the mean of two seeds, which differ by at most 0.5 points.</p>
+
+<h3>A1. Does damage hurt a model trained on clean lines? <span class="pass">PASS</span></h3>
+<div class="two">
+<figure><img src="../results/figures/fig_robustness.png"><figcaption>Error of the full-label IAM model on damaged copies of the IAM test set.</figcaption></figure>
+<div>
+<p>At medium strength, ink loss multiplies the error by 7.6, noise by 5.0, paper tone by 3.4 and blur by 3.1. Show-through, fading and stains raise it by at most 1.4 times.</p>
+<p>On real CATMuS lines, the most faded quarter of lines has 1.35 to 1.47 times the error of the least faded quarter. Paper darkness, noise and unevenness show no clear effect there.</p>
+</div>
+</div>
+
+<h3>A2. Do real damaged lines differ measurably from clean ones? <span class="fail">FAIL</span></h3>
+<figure><img src="../results/figures/fig1_stats_iam_vs_catmus.png"><figcaption>Eight statistics on 3,000 IAM lines (outline) and 3,000 CATMuS lines (fill).</figcaption></figure>
+<p>Our rule needed three damage statistics to separate clearly. Only two do: the paper is much darker, and far more of it is faintly grey (show-through). Contrast, sharpness and noise look much like clean handwriting. So real medieval damage sits mostly in the paper, not in the blur and noise that hand-picked recipes stress.</p>
+
+<h3>A3. Does pretraining beat no pretraining? <span class="fail">FAIL</span> &nbsp; A4. Is derived at least as good as hand-picked? <span class="pass">PASS</span></h3>
+<table>
+<tr><th>Test CER, mean of 2 seeds</th><th class="n">No pretraining</th><th class="n">Masking only</th><th class="n">+ hand-picked</th><th class="n">+ derived (ours)</th></tr>
+<tr><td>CATMuS, 5% labels</td><td class="n">33.6%</td><td class="n">33.3%</td><td class="n">35.0%</td><td class="n">33.4%</td></tr>
+<tr><td>IAM, 10% labels</td><td class="n">19.6%</td><td class="n">20.4%</td><td class="n">21.0%</td><td class="n">20.5%</td></tr>
+<tr><td>IAM, 1% labels</td><td class="n">43.3%</td><td class="n">43.8%</td><td class="n">44.7%</td><td class="n">43.9%</td></tr>
+</table>
+<p>No pretrained model beats plain training by more than the gap between seeds. Derived damage is better than hand-picked in all three rows, but it only matches masking alone. The fair reading is: <b>hand-picked damage hurts, derived damage does no harm</b>. It is not yet "derived damage helps".</p>
+
+<h3>RQ3 preview. Does invariance predict the error rise? Yes, strongly</h3>
+<div class="two">
+<figure><img src="../results/figures/fig_invariance_vs_cer.png"><figcaption>Each dot is one damage type at one strength (21 in all), full-label IAM model.</figcaption></figure>
+<div>
+<p>The less the encoder ignores a damage, the more that damage raises the error. Spearman correlation is <b>−0.92</b> for the model in the figure, and between −0.78 and −0.95 for all nine models.</p>
+<p>Two checks, run on 10 Nov, rule out the easy explanations:</p>
+<ul>
+<li><b>Strength held fixed.</b> Inside each strength level the correlation across the seven damage types is still −0.81 to −0.88 on average. So it is not just "stronger damage moves everything".</li>
+<li><b>Across models.</b> For each of the 21 damage settings, the models that are more invariant to it tend to be hurt less by it. The correlation is negative in 21 of 21 settings (mean −0.69).</li>
+</ul>
+</div>
+</div>
+
+<h3>New on 10 Nov: the recipe leaves a trace in robustness</h3>
+<p>The same eight IAM models (10% labels), tested on damaged copies of the test set. Values are CER for seed 0 / seed 1.</p>
+<table>
+<tr><th>CER under damage</th><th class="n">No pretraining</th><th class="n">Masking only</th><th class="n">+ hand-picked</th><th class="n">+ derived (ours)</th></tr>
+<tr><td>Paper tone, medium</td><td class="n">39.9 / 39.4</td><td class="n">32.5 / 59.2</td><td class="n">38.9 / 41.2</td><td class="n"><b>32.1 / 26.4</b></td></tr>
+<tr><td>Blur, high</td><td class="n">79.2 / 79.6</td><td class="n">73.2 / 82.7</td><td class="n"><b>64.1 / 63.6</b></td><td class="n">80.1 / 79.2</td></tr>
+<tr><td>Show-through, high</td><td class="n">30.9 / 31.6</td><td class="n">34.8 / 34.4</td><td class="n">41.8 / 36.4</td><td class="n">29.9 / 32.7</td></tr>
+<tr><td>Ink loss, medium (never pretrained on)</td><td class="n">75.3 / 74.9</td><td class="n">75.1 / 76.9</td><td class="n">74.0 / 75.1</td><td class="n">78.3 / 74.1</td></tr>
+</table>
+<p>The hand-picked recipe blurs half of its lines, and its models are the most robust to blur. The derived recipe darkens the paper on 84% of its lines, and its models are the most robust to paper tone. Nothing helps on ink loss, which no recipe contained. This is two seeds, synthetic damage and one dataset, so it is a first sign and not a result we can claim.</p>
+
+<h2>5. Will this work? What supports it and what does not</h2>
+<div class="two">
+<div class="box plain">
+<div class="kicker" style="color:var(--green)">For</div>
+<ul>
+<li>The problem is real and large (52.5% CER for an industrial OCR on CATMuS).</li>
+<li>Damage clearly hurts, and invariance predicts by how much. That is RQ3's premise, and it holds in every model.</li>
+<li>A model becomes robust to what it was pretrained on. That is the mechanism the whole project relies on.</li>
+<li>Derived damage never did worse than hand-picked damage.</li>
+</ul>
+</div>
+<div class="box plain">
+<div class="kicker" style="color:var(--red)">Against</div>
+<ul>
+<li>Pretraining gave no accuracy gain. Without that, RQ1 has no answer.</li>
+<li>Derived damage only matches plain masking.</li>
+<li>The damage that separates real lines from clean ones (dark paper, show-through) is not the damage that raises error on real lines (low contrast). "What differs" and "what hurts" are not the same thing, and the recipe currently follows the first.</li>
+</ul>
+</div>
+</div>
+<p><b>Why the missing gain is not the end of the idea.</b> Published gains from this kind of pretraining come from millions of unlabelled lines and much larger models. We used 30,000 lines for 34 minutes. One of the papers we cite (Kišš and Hradiš, ICDAR 2024) also reports that pretraining on the target collection does not always beat plain supervised training. So the pilot tested our small setup, and the idea at proper scale is still open.</p>
+<p><b>Phase 2 plan.</b> Pretrain longer on far more lines, or start from a published pretrained encoder; freeze the pretrained part for the first fine-tuning steps; use three or more seeds; test with about 30 labelled lines, where pretraining should matter most; tag real test lines by damage type.</p>
+<p><b>If pretraining still gives nothing by the middle of Phase 2,</b> the project turns into a study of which damage really hurts recognisers and how well measured invariance predicts it. The measurement tool, the damage models and the RQ3 result carry over unchanged, and that study can be published without a pretraining gain.</p>
+
+<h2>6. Questions the panel may ask</h2>
+<p class="q">Your method did not improve accuracy. What have you shown?</p>
+<p>That the pipeline works end to end, that damage hurts and by how much, and that invariance predicts the error rise. The accuracy comparison was run at a very small scale and is the first task of Phase 2.</p>
+<p class="q">What is new compared with existing work?</p>
+<p>Every text-recognition paper we found picks its corruptions by hand, including the strongest recent one (NeurIPS 2026). We set them from measurements of real lines, and we measure invariance for each damage type.</p>
+<p class="q">Why did two of your four assumptions fail?</p>
+<p>The rules were fixed before the runs, so we report them as they came out. A2 missed by one statistic (two separated clearly, three were needed). A3 failed because pretraining at this scale gave no gain.</p>
+<p class="q">Why not use a large vision-language model?</p>
+<p>They are outside our scope and compute. A small model keeps the comparison clean: only the pretraining changes between runs.</p>
+<p class="q">Why a CRNN and not a transformer?</p>
+<p>We tried a small ViT first. With so few labelled lines it memorised them (60–75% CER against 20–43% for the CRNN). A transformer encoder stays an option for Phase 2 with more data.</p>
+
+<h2>7. Where everything is</h2>
+<table>
+<tr><th style="width:38%">What</th><th>Where (inside the <code>research</code> folder)</th></tr>
+<tr><td>Review-2 slides (Fri 13 Nov), 24 slides</td><td><code>capstone/reviews/review2/submission/</code></td></tr>
+<tr><td>End-semester slides (Tue 17 Nov), 28 slides</td><td><code>capstone/reviews/review3/submission/</code></td></tr>
+<tr><td>Phase-1 report draft (Word)</td><td><code>capstone/report/Team147_Phase1_Report_DRAFT.docx</code></td></tr>
+<tr><td>Weekly reports, weeks 1–15</td><td><code>capstone/weekly_reports/</code></td></tr>
+<tr><td>All results and figures</td><td><code>results/</code> (summary: <code>results/pilot_summary.md</code>)</td></tr>
+<tr><td>Code</td><td><code>lwti/</code></td></tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,29 @@
+| Run | Group | n | Spearman ρ (invariance vs CER ratio) | p |
+|---|---|---|---|---|
+| iam_crnn_cmae_derived_v0_f0.1_s0 | all families | 21 | -0.91 | 0.000 |
+| iam_crnn_cmae_derived_v0_f0.1_s0 | overlap characters | 9 | -0.87 | 0.002 |
+| iam_crnn_cmae_derived_v0_f0.1_s0 | paper only | 12 | -0.87 | 0.000 |
+| iam_crnn_cmae_derived_v0_f0.1_s1 | all families | 21 | -0.92 | 0.000 |
+| iam_crnn_cmae_derived_v0_f0.1_s1 | overlap characters | 9 | -0.95 | 0.000 |
+| iam_crnn_cmae_derived_v0_f0.1_s1 | paper only | 12 | -0.85 | 0.001 |
+| iam_crnn_cmae_handpicked_f0.1_s0 | all families | 21 | -0.81 | 0.000 |
+| iam_crnn_cmae_handpicked_f0.1_s0 | overlap characters | 9 | -0.83 | 0.005 |
+| iam_crnn_cmae_handpicked_f0.1_s0 | paper only | 12 | -0.78 | 0.003 |
+| iam_crnn_cmae_handpicked_f0.1_s1 | all families | 21 | -0.88 | 0.000 |
+| iam_crnn_cmae_handpicked_f0.1_s1 | overlap characters | 9 | -0.83 | 0.005 |
+| iam_crnn_cmae_handpicked_f0.1_s1 | paper only | 12 | -0.85 | 0.001 |
+| iam_crnn_cmae_none_f0.1_s0 | all families | 21 | -0.89 | 0.000 |
+| iam_crnn_cmae_none_f0.1_s0 | overlap characters | 9 | -0.82 | 0.007 |
+| iam_crnn_cmae_none_f0.1_s0 | paper only | 12 | -0.85 | 0.001 |
+| iam_crnn_cmae_none_f0.1_s1 | all families | 21 | -0.94 | 0.000 |
+| iam_crnn_cmae_none_f0.1_s1 | overlap characters | 9 | -0.95 | 0.000 |
+| iam_crnn_cmae_none_f0.1_s1 | paper only | 12 | -0.92 | 0.000 |
+| iam_crnn_f0.1_s0 | all families | 21 | -0.91 | 0.000 |
+| iam_crnn_f0.1_s0 | overlap characters | 9 | -0.87 | 0.002 |
+| iam_crnn_f0.1_s0 | paper only | 12 | -0.92 | 0.000 |
+| iam_crnn_f0.1_s1 | all families | 21 | -0.94 | 0.000 |
+| iam_crnn_f0.1_s1 | overlap characters | 9 | -0.92 | 0.001 |
+| iam_crnn_f0.1_s1 | paper only | 12 | -0.92 | 0.000 |
+| iam_crnn_f1_s0 | all families | 21 | -0.92 | 0.000 |
+| iam_crnn_f1_s0 | overlap characters | 9 | -0.80 | 0.010 |
+| iam_crnn_f1_s0 | paper only | 12 | -0.94 | 0.000 |

@@ -1,0 +1,20 @@
+{
+ "data": "iam",
+ "model": "crnn",
+ "frac": 0.1,
+ "seed": 1,
+ "steps": 8000,
+ "bs": 16,
+ "lr": 0.0003,
+ "wd": 0.01,
+ "eval_every": 500,
+ "patience": 8,
+ "init": null,
+ "freeze_steps": 0,
+ "overfit": 0,
+ "tag": "",
+ "workers": 6,
+ "name": null,
+ "n_train": 648,
+ "n_classes": 80
+}

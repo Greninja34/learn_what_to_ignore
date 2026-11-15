@@ -1,0 +1,58 @@
+{
+ "tone": {
+  "prob": 0.5,
+  "p_range": [
+   0.65,
+   0.9
+  ],
+  "held_out": false
+ },
+ "fade": {
+  "prob": 0.5,
+  "p_range": [
+   0.2,
+   0.6
+  ],
+  "held_out": false
+ },
+ "blur": {
+  "prob": 0.5,
+  "p_range": [
+   0.8,
+   2.5
+  ],
+  "held_out": false
+ },
+ "noise": {
+  "prob": 0.5,
+  "p_range": [
+   0.04,
+   0.18
+  ],
+  "held_out": false
+ },
+ "showthrough": {
+  "prob": 0.5,
+  "p_range": [
+   0.15,
+   0.5
+  ],
+  "held_out": false
+ },
+ "stain": {
+  "prob": 0.5,
+  "p_range": [
+   0.15,
+   0.5
+  ],
+  "held_out": false
+ },
+ "inkloss": {
+  "prob": 0.5,
+  "p_range": [
+   0.15,
+   0.55
+  ],
+  "held_out": true
+ }
+}

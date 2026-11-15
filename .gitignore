@@ -1,0 +1,15 @@
+# Python caches
+__pycache__/
+*.pyc
+
+# Model checkpoints (large binaries; logs and CSVs in runs/ are kept)
+*.pt
+
+# Not pushed: fonts are licensed (Segoe UI, Consolas) and large; college submissions; superseded files
+fonts/
+capstone/
+_archive/
+
+# Editor
+.vscode/
+.ipynb_checkpoints/

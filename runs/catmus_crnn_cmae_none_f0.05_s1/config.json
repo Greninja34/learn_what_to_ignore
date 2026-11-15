@@ -1,0 +1,22 @@
+{
+ "data": "catmus",
+ "model": "crnn",
+ "frac": 0.05,
+ "seed": 1,
+ "steps": 8000,
+ "bs": 16,
+ "lr": 0.0003,
+ "wd": 0.01,
+ "eval_every": 500,
+ "patience": 8,
+ "init": "runs/cmae_none/encoder.pt",
+ "freeze_steps": 0,
+ "overfit": 0,
+ "tag": "cmae_none",
+ "head": "linear",
+ "aug": "none",
+ "workers": 6,
+ "name": "catmus_crnn_cmae_none_f0.05_s1",
+ "n_train": 1188,
+ "n_classes": 196
+}

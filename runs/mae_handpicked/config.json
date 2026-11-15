@@ -1,0 +1,13 @@
+{
+ "corrupt": "handpicked",
+ "steps": 20000,
+ "bs": 64,
+ "lr": 0.0003,
+ "wd": 0.05,
+ "mask": 0.75,
+ "seed": 0,
+ "workers": 12,
+ "name": null,
+ "pool": 30244,
+ "crop_w": 512
+}
