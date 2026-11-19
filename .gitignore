@@ -13,3 +13,7 @@ _archive/
 # Editor
 .vscode/
 .ipynb_checkpoints/
+
+# Build artefacts and annotated deck scans
+paper/_build/
+DOC-*.pdf

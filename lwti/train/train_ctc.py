@@ -26,6 +26,7 @@ import torch
 from torch.utils.data import DataLoader
 
 from lwti.data.charset import charset_for
+from lwti.data.common import bg_normalise
 from lwti.data.dataset import BucketSampler, LineDataset, collate, load_frame, subset, train_files
 from lwti.eval.cer import cer
 
@@ -63,9 +64,19 @@ def evaluate(model, loader, cs, device, max_batches=None):
     return cer(refs, hyps), refs, hyps, ids
 
 
-def loader(ds, bs, shuffle, seed, workers):
-    return DataLoader(ds, batch_sampler=BucketSampler(ds.widths, bs, shuffle, seed), collate_fn=collate,
-                      num_workers=workers, pin_memory=True, persistent_workers=workers > 0)
+def loader(ds, bs, shuffle, seed, workers, tag_epoch=False):
+    return DataLoader(ds, batch_sampler=BucketSampler(ds.widths, bs, shuffle, seed, tag_epoch=tag_epoch),
+                      collate_fn=collate, num_workers=workers, pin_memory=True, persistent_workers=workers > 0)
+
+
+class BgnormAfter:
+    """transform, then background normalisation (picklable for DataLoader workers)."""
+
+    def __init__(self, tf):
+        self.tf = tf
+
+    def __call__(self, g, rng):
+        return bg_normalise(self.tf(g, rng) if self.tf is not None else g)
 
 
 def main():
@@ -85,7 +96,11 @@ def main():
     ap.add_argument("--overfit", type=int, default=0, help="sanity check: train and eval on N train lines")
     ap.add_argument("--tag", default="", help="free-text label for results/runs.csv (e.g. pretraining name)")
     ap.add_argument("--head", default="linear", choices=["linear", "lstm"], help="vit only: output head")
-    ap.add_argument("--aug", default="none", choices=["none", "light"], help="training-time augmentation")
+    ap.add_argument("--aug", default="none", choices=["none", "light", "handpicked", "derived_v0"],
+                    help="training-time augmentation; handpicked / derived_v0 = that damage recipe "
+                         "(lwti.damage.derive), resampled every epoch, train lines only")
+    ap.add_argument("--bgnorm", action="store_true",
+                    help="background normalisation (lwti.data.common.bg_normalise) on train, val and test lines")
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--name", default=None)
     args = ap.parse_args()
@@ -113,8 +128,17 @@ def main():
     if args.aug == "light":
         from lwti.data.augment import light_affine
         train_tf = light_affine
-    tl = loader(LineDataset(tr, cs, transform=train_tf, seed=args.seed), args.bs, True, args.seed, args.workers)
-    vl = loader(LineDataset(va, cs), 32, False, 0, args.workers)
+    elif args.aug in ("handpicked", "derived_v0"):
+        from lwti.damage.derive import CorruptionSampler, load_setting
+        train_tf = CorruptionSampler(load_setting(args.aug))
+    eval_tf = BgnormAfter(None) if args.bgnorm else None
+    if args.bgnorm:
+        train_tf = BgnormAfter(train_tf)
+    # damage recipes are redrawn every epoch (rng seeded with (seed, line, epoch)); none / light keep (seed, line)
+    per_epoch = args.aug in ("handpicked", "derived_v0")
+    tl = loader(LineDataset(tr, cs, transform=train_tf, seed=args.seed), args.bs, True, args.seed, args.workers,
+                tag_epoch=per_epoch)
+    vl = loader(LineDataset(va, cs, transform=eval_tf), 32, False, 0, args.workers)
 
     kw = {"head": args.head} if args.model == "vit" else {}
     model = build_model(args.model, len(cs), **kw).to(device)
@@ -168,7 +192,7 @@ def main():
                 break
 
     model.load_state_dict(torch.load(os.path.join(out, "best.pt"), map_location=device))
-    tel = loader(LineDataset(te, cs), 32, False, 0, args.workers)
+    tel = loader(LineDataset(te, cs, transform=eval_tf), 32, False, 0, args.workers)
     test_cer, refs, hyps, ids = evaluate(model, tel, cs, device)
     minutes = (time.time() - t0) / 60
     print(f"[{name}] best val CER {best * 100:.2f}% | TEST CER {test_cer * 100:.2f}% | {minutes:.1f} min", flush=True)

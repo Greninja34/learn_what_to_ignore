@@ -44,14 +44,14 @@ def pooled_features(model, loader, device):
     return torch.cat(feats)[order], [ids[i] for i in order]
 
 
-def invariance(model, df, cs, device):
-    clean, ids0 = pooled_features(model, test_loader(df, cs, None), device)
+def invariance(model, df, cs, device, bgnorm=False):
+    clean, ids0 = pooled_features(model, test_loader(df, cs, None, bgnorm=bgnorm), device)
     mu, sd = clean.mean(0), clean.std(0) + 1e-6
     z0 = (clean - mu) / sd
     out = {}
     for fam in F.FAMILIES:
         for lv in range(3):
-            dmg, ids = pooled_features(model, test_loader(df, cs, F.fixed(fam, lv)), device)
+            dmg, ids = pooled_features(model, test_loader(df, cs, F.fixed(fam, lv), bgnorm=bgnorm), device)
             assert ids == ids0
             z = (dmg - mu) / sd
             out[(fam, lv)] = torch.nn.functional.cosine_similarity(z0, z, dim=1).mean().item()
@@ -69,7 +69,7 @@ def main():
         cfg, cs, model = load_run(run, device)
         df = load_frame(cfg["data"], "test").sample(args.n, random_state=0).reset_index(drop=True)
         name = os.path.basename(run.rstrip("/"))
-        for (fam, lv), v in invariance(model, df, cs, device).items():
+        for (fam, lv), v in invariance(model, df, cs, device, cfg.get("bgnorm", False)).items():
             rows.append(dict(run=name, family=fam, level=lv, overlaps_text=F.OVERLAPS_TEXT[fam], invariance=v))
         print(f"[{name}] done", flush=True)
     inv = pd.DataFrame(rows)

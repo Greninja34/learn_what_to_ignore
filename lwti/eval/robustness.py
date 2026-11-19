@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 from lwti.damage import families as F
 from lwti.data.charset import charset_for
 from lwti.data.dataset import BucketSampler, LineDataset, collate, load_frame, train_files
-from lwti.train.train_ctc import RESULTS, build_model, evaluate
+from lwti.train.train_ctc import RESULTS, BgnormAfter, build_model, evaluate
 
 
 def load_run(run_dir, device):
@@ -32,7 +32,10 @@ def load_run(run_dir, device):
     return cfg, cs, model
 
 
-def test_loader(df, cs, transform, workers=6):
+def test_loader(df, cs, transform, workers=6, bgnorm=False):
+    """bgnorm: the run was trained with --bgnorm, so normalise after the damage, as at training time."""
+    if bgnorm:
+        transform = BgnormAfter(transform)
     ds = LineDataset(df, cs, transform=transform, seed=1234)
     return DataLoader(ds, batch_sampler=BucketSampler(ds.widths, 32, False, 0), collate_fn=collate,
                       num_workers=workers, pin_memory=True)
@@ -56,13 +59,13 @@ def main():
         cfg, cs, model = load_run(run, device)
         df = load_frame(cfg["data"], args.split)
         name = os.path.basename(run.rstrip("/"))
-        clean, *_ = evaluate(model, test_loader(df, cs, None), cs, device)
+        clean, *_ = evaluate(model, test_loader(df, cs, None, bgnorm=cfg.get("bgnorm", False)), cs, device)
         print(f"[{name}] clean CER {clean * 100:.2f}%", flush=True)
         common = [name, cfg["data"], cfg["model"], cfg.get("tag", ""), cfg["frac"], cfg["seed"], args.split]
         w.writerow(common + ["clean", -1, "", "", round(clean, 5), round(clean, 5), 1.0])
         for fam in args.families.split(","):
             for lv in range(3):
-                c, *_ = evaluate(model, test_loader(df, cs, F.fixed(fam, lv)), cs, device)
+                c, *_ = evaluate(model, test_loader(df, cs, F.fixed(fam, lv), bgnorm=cfg.get("bgnorm", False)), cs, device)
                 w.writerow(common + [fam, lv, F.SEVERITY[fam][lv], F.OVERLAPS_TEXT[fam], round(c, 5), round(clean, 5),
                                      round(c / max(clean, 1e-6), 3)])
                 fh.flush()

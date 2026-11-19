@@ -64,6 +64,9 @@ class LineDataset(Dataset):
 
     transform: optional fn(np.uint8 gray HxW, rng) -> np.uint8 gray HxW
                applied before the ink inversion (used for damage families).
+               rng is seeded with (seed, i), so a line gets the same transform
+               every time; with an index (i, epoch) (BucketSampler(tag_epoch=True))
+               it is seeded with (seed, i, epoch) and redrawn every epoch.
     """
 
     def __init__(self, df, charset=None, transform=None, seed=0):
@@ -79,9 +82,14 @@ class LineDataset(Dataset):
         return len(self.pngs)
 
     def __getitem__(self, i):
+        if isinstance(i, tuple):  # (line, epoch)
+            key = (self.seed, i[0], i[1])
+            i = i[0]
+        else:
+            key = (self.seed, i)
         g = png_decode(self.pngs[i])
         if self.transform is not None:
-            g = self.transform(g, np.random.default_rng((self.seed, i)))
+            g = self.transform(g, np.random.default_rng(key))
         x = torch.from_numpy(1.0 - g.astype(np.float32) / 255.0)[None]
         y = self.cs.encode(self.texts[i]) if self.cs is not None else []
         return x, self.texts[i], torch.tensor(y, dtype=torch.long), self.ids[i]
@@ -102,18 +110,24 @@ def collate(batch):
 
 
 class BucketSampler(Sampler):
-    """Batches of similar width (less padding). Shuffled per epoch if shuffle."""
+    """Batches of similar width (less padding). Shuffled per epoch if shuffle.
 
-    def __init__(self, widths, batch_size, shuffle=True, seed=0, bucket=50):
+    tag_epoch: yield (index, epoch) pairs instead of indices, so LineDataset
+    draws a fresh transform for every line every epoch.
+    """
+
+    def __init__(self, widths, batch_size, shuffle=True, seed=0, bucket=50, tag_epoch=False):
         self.widths = np.asarray(widths)
         self.bs = batch_size
         self.shuffle = shuffle
         self.seed = seed
         self.bucket = bucket  # batches per sorted chunk
         self.epoch = 0
+        self.tag_epoch = tag_epoch
 
     def __iter__(self):
         rng = random.Random(self.seed + self.epoch)
+        ep = self.epoch
         self.epoch += 1
         idx = list(range(len(self.widths)))
         if self.shuffle:
@@ -125,6 +139,8 @@ class BucketSampler(Sampler):
             batches += [c[k: k + self.bs] for k in range(0, len(c), self.bs)]
         if self.shuffle:
             rng.shuffle(batches)
+        if self.tag_epoch:
+            batches = [[(i, ep) for i in b] for b in batches]
         return iter(batches)
 
     def __len__(self):

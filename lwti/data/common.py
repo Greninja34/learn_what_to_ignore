@@ -82,6 +82,25 @@ def mask_to_line(mask: np.ndarray, w: int, h: int = LINE_H) -> np.ndarray:
     return (np.asarray(m) > 250).astype(np.uint8) * 255  # valid only if entirely real
 
 
+def bg_normalise(g: np.ndarray, k: int = 21) -> np.ndarray:
+    """Simple background normalisation of a uint8 gray line (dark ink on light paper).
+
+    Background estimate: grayscale morphological closing with a k x k square
+    (removes ink strokes thinner than k px; LINE_H = 64, strokes ~3-8 px),
+    then a k x k median blur. The line is divided by it (paper -> 1) and the
+    result stretched to the full 0-255 range between its 1st percentile
+    and 255. Removes slow paper tone / stain / show-through gradients.
+    """
+    import cv2
+    bg = cv2.morphologyEx(g, cv2.MORPH_CLOSE, np.ones((k, k), np.uint8))
+    bg = cv2.medianBlur(bg, k)
+    n = np.minimum(g.astype(np.float32) / np.maximum(bg.astype(np.float32), 1.0), 1.0)
+    lo = np.percentile(n, 1)
+    if lo > 0.98:  # (almost) blank line: nothing to stretch
+        return np.full_like(g, 255)
+    return np.clip((n - lo) / (1.0 - lo) * 255.0 + 0.5, 0, 255).astype(np.uint8)
+
+
 def png_bytes(a: np.ndarray) -> bytes:
     buf = io.BytesIO()
     Image.fromarray(a).save(buf, format="PNG", optimize=False, compress_level=3)

@@ -1,0 +1,23 @@
+{
+ "data": "iam",
+ "model": "crnn",
+ "frac": 0.1,
+ "seed": 1,
+ "steps": 8000,
+ "bs": 16,
+ "lr": 0.0003,
+ "wd": 0.01,
+ "eval_every": 500,
+ "patience": 8,
+ "init": null,
+ "freeze_steps": 0,
+ "overfit": 0,
+ "tag": "aug_handpicked",
+ "head": "linear",
+ "aug": "handpicked",
+ "bgnorm": false,
+ "workers": 6,
+ "name": "iam_crnn_aug_handpicked_f0.1_s1",
+ "n_train": 648,
+ "n_classes": 80
+}
