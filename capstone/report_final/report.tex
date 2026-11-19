@@ -633,13 +633,11 @@ of every training recipe and serves as the unseen damage type.
 
 \begin{figure}
 \centering
-\includegraphics[width=0.5\linewidth,height=\textheight,keepaspectratio,alt={One
-IAM line: clean (top), then fade, blur, noise, show-through, stain and
-ink loss, each at low, medium and high
-strength.}]{figures/damage_families_sheet.png}
-\caption{One IAM line: clean (top), then fade, blur, noise,
-show-through, stain and ink loss, each at low, medium and high
-strength.}
+\includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={The
+seven synthetic damage types on one IAM line, at the three fixed test
+strengths (low, medium, high).}]{figures/fig_damage_levels.png}
+\caption{The seven synthetic damage types on one IAM line, at the three
+fixed test strengths (low, medium, high).}
 \end{figure}
 
 \chapter{Proposed Approach and Pilot
@@ -650,16 +648,19 @@ Results}\label{proposed-approach-and-pilot-results}
 \begin{figure}
 \centering
 \includegraphics[width=1\linewidth,height=\textheight,keepaspectratio,alt={The
-proposed pipeline. Steps 1 and 2 (measure and fit) are new in this
-project.}]{figures/pipeline.png}
-\caption{The proposed pipeline. Steps 1 and 2 (measure and fit) are new
-in this project.}
+proposed approach. Steps 1 and 2 (measure and model) are new in this
+project; step 3 is carried out by four experiments, E1 (done in the
+pilot) and E2--E4 (planned).}]{figures/approach_diagram.jpg}
+\caption{The proposed approach. Steps 1 and 2 (measure and model) are
+new in this project; step 3 is carried out by four experiments, E1 (done
+in the pilot) and E2--E4 (planned).}
 \end{figure}
 
 The method has five steps (Figure 6.1): measure damage statistics on
 real lines; fit the frequency and strength of each damage type; pretrain
 or train with the derived damage; evaluate on held-out damage, media and
-scripts; and analyse whether invariance predicts the error.
+scripts; and analyse whether invariance predicts the error. The loop
+back from step 5 refines the damage models.
 
 \textbf{Deriving the recipe.} Each damage type is first applied to clean
 IAM lines at many strengths, and its statistic is measured each time,

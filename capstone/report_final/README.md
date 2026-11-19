@@ -7,6 +7,7 @@
 | `report.tex` | The same content as a plain LaTeX `report` (pandoc output, no styling) |
 | `report.pdf` | Preview only, to check flow. Not the submission. |
 | `figures/` | The 4 figures used in the report |
+| `WORD_FORMATTING.md` | Exact Word settings: page setup, styles, header/footer, sections, TOC |
 | `build.sh` | Rebuilds `report.tex` / `report.pdf` from `report.md` |
 
 Chapters follow the template TOC: Introduction · Problem Statement · Literature

@@ -287,18 +287,19 @@ show-through, stain, fade, blur, noise and ink loss. Each has three fixed test
 strengths (low, medium, high). Ink loss is held out of every training recipe
 and serves as the unseen damage type.
 
-![One IAM line: clean (top), then fade, blur, noise, show-through, stain and ink loss, each at low, medium and high strength.](figures/damage_families_sheet.png){width=50%}
+![The seven synthetic damage types on one IAM line, at the three fixed test strengths (low, medium, high).](figures/fig_damage_levels.png){width=100%}
 
 # Proposed Approach and Pilot Results
 
 ## Proposed Approach
 
-![The proposed pipeline. Steps 1 and 2 (measure and fit) are new in this project.](figures/pipeline.png){width=100%}
+![The proposed approach. Steps 1 and 2 (measure and model) are new in this project; step 3 is carried out by four experiments, E1 (done in the pilot) and E2–E4 (planned).](figures/approach_diagram.jpg){width=100%}
 
 The method has five steps (Figure 6.1): measure damage statistics on real
 lines; fit the frequency and strength of each damage type; pretrain or train
 with the derived damage; evaluate on held-out damage, media and scripts; and
-analyse whether invariance predicts the error.
+analyse whether invariance predicts the error. The loop back from step 5
+refines the damage models.
 
 **Deriving the recipe.** Each damage type is first applied to clean IAM lines at
 many strengths, and its statistic is measured each time, giving a response
