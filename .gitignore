@@ -7,7 +7,6 @@ __pycache__/
 
 # Not pushed: fonts are licensed (Segoe UI, Consolas) and large; college submissions; superseded files
 fonts/
-capstone/
 _archive/
 
 # Editor
@@ -17,3 +16,8 @@ _archive/
 # Build artefacts and annotated deck scans
 paper/_build/
 DOC-*.pdf
+
+# capstone/: build folders, and the guide's signature / approval mail (repo is public)
+capstone/**/_build/
+capstone/weekly_reports/guide_signature*
+capstone/reviews/_kit/assets/img/guide_approval*
