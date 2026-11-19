@@ -1,6 +1,6 @@
 <!--
 Phase-1 report, TEMPLATE-ONLY version (no pilot run), cut to the department template and 20-25 pages in total.
-Build: python capstone/report/build_pandoc.py --pdf --src report_template.md --name Team147_Phase1_Report_template
+Build: python capstone/report/build_pandoc.py --pdf --src report_template.md --name Team147_Phase1_Report_without_pilot
 The previous 33-page version is in git history.
 -->
 

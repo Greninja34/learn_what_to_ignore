@@ -387,8 +387,8 @@ class Report:
                 p.paragraph_format.space_after = Pt(0)
                 set_font(p.add_run(v), 12)
         self.para("In partial fulfillment for the completion of Fifth-semester Capstone Project Phase - 1 "
-                  "(⟦UE24CS320A⟧) in the Program of Study - Bachelor of Technology in Computer Science and Engineering "
-                  "under rules and regulations of PES University, Bengaluru during the period ⟦Aug – Dec. 2026⟧. It is "
+                  "(UE24CS320A) in the Program of Study - Bachelor of Technology in Computer Science and Engineering "
+                  "under rules and regulations of PES University, Bengaluru during the period Aug – Dec. 2026. It is "
                   "certified that all corrections/suggestions indicated for internal assessment have been incorporated "
                   "in the report. The dissertation has been approved as it satisfies the 5th-semester academic "
                   "requirements in respect of project work.")
