@@ -4,125 +4,160 @@ Part A is the literature: every paper in the deck, with its core idea, how it wo
 Part B is the research gap and the literature survey as you would tell it.
 Part C answers your questions (a)–(v) and lists every change made to the deck.
 
-Labels used below: **[verified]** = checked today against the paper or its abstract; **[from memory]** = standard, well-known facts, not re-checked today.
+All paper facts were checked against the papers on 19 Nov 2026.
 
 ---
 
 ## Part A. The papers
 
-### A1. Garrido-Munoz & Calvo-Zaragoza, *Handwritten Text Recognition Lives in the High-Pixel Variance Subspace*, arXiv 2609.35473, Sep 2026, accepted at NeurIPS 2026 [verified: abstract]
-- **Problem:** For natural photos, contrastive SSL usually beats pixel reconstruction. For handwriting, the opposite seems true. Why?
-- **Core idea:** In handwriting images, the information needed to read the text sits in the **high-variance pixel directions** (think of the main components of a PCA on pixels: strokes vs paper). Methods that rebuild pixels are forced to model those directions, while contrastive/JEPA methods can ignore them.
-- **How:** Six SSL methods from three families (masked image modelling = pixel reconstruction, JEPA, contrastive), all with the same encoder, data and evaluation. Six handwriting benchmarks, five languages. They measure how well each encoder lines up with the high-variance pixel subspace.
-- **Findings:** Pixel-reconstruction methods get the lowest CER on every benchmark; they are the only family that gains from pretraining on real handwriting; they are more label-efficient; within each method, alignment with the high-variance subspace predicts CER.
-- **Why it matters to us:** It is the reason we chose **reconstruction (MAE-style)** pretraining and not contrastive. It also made us reframe: the question is no longer "which SSL family" but "which damage should the model learn to see through".
-- **Limit for us:** No damage study; clean benchmarks.
-- **Viva Q:** *Why MAE and not contrastive?* → Because for handwriting, reconstruction wins (this paper); contrastive needs augmentations that keep the text identity, which is hard for text.
+Every entry below was checked on 19 Nov 2026 against the paper itself (full text for the arXiv papers, the publisher or author page for the rest). Where a source could not be read in full, the entry says so.
 
-### A2. Penarrubia, Valero-Mas & Calvo-Zaragoza, *Self-Supervised Learning for Text Recognition: A Critical Survey*, IJCV 2025 [from memory]
+### A1. Garrido-Munoz & Calvo-Zaragoza, *Handwritten Text Recognition Lives in the High-Pixel Variance Subspace*, arXiv 2609.35473, Sep 2026, accepted at NeurIPS 2026
+- **Problem:** For natural photos, contrastive SSL usually beats pixel reconstruction. For handwriting, the opposite is true. Why?
+- **Core idea:** The information that tells characters apart sits in the **high-variance pixel directions** of handwriting images. Pixel-reconstruction methods have to model these directions; contrastive and JEPA methods can ignore them.
+- **How:** Six SSL methods from three families (pixel masked image modelling, JEPA, contrastive), all with the same encoder, data and evaluation. Six handwriting benchmarks in five languages. They measure how well each encoder lines up with the high-variance pixel subspace.
+- **Findings:** Pixel-reconstruction methods get the lowest CER on every benchmark, they are the only family that gains from pretraining on real handwriting, and they need fewer labels. Within each method, alignment with the high-variance subspace predicts CER.
+- **Why it matters to us:** It is why we chose reconstruction (MAE-style) pretraining, and why our question became "which damage" instead of "which SSL family".
+- **Limit for us:** Fixed augmentation pipeline; no damage study.
+- **Viva Q:** *Why MAE and not contrastive?* → For handwriting, reconstruction wins (this paper).
+
+### A2. Penarrubia, Valero-Mas & Calvo-Zaragoza, *Self-Supervised Learning for Text Recognition: A Critical Survey*, IJCV 2025 (arXiv 2407.19889)
 - **What it is:** The survey of SSL for text recognition (handwritten and scene text).
-- **Core content:** Sorts methods into **discriminative** (contrastive such as SeqCLR, non-contrastive), **generative** (masked image modelling, e.g. MAE-style, Text-DIAE) and hybrids. Shows that papers use different protocols (different backbones, label budgets, datasets), so results are hard to compare, and that **augmentations are picked ad hoc**.
-- **Why it matters to us:** It is the evidence that "how to choose the augmentations / corruptions" is an open, recognised problem. Our gap starts here.
-- **Viva Q:** *Is your gap real?* → The field's own survey says augmentations are chosen ad hoc and protocols are not standard.
+- **Taxonomy (from the paper):** **Discriminative** methods, split into contrastive learning, geometric and puzzle solvers, distillation, clustering and information maximisation (not all of these have been tried for text); **generative** methods (masked image modelling, image inpainting, GANs); and hybrids such as DiG, which combine both.
+- **Main findings:** Results are hard to compare because there is **no standardised evaluation protocol**: for example, papers fine-tune on different label fractions. The authors propose standardisations. They also stress that data augmentation must **fit the nature of text data**: for example, horizontal crops and flips can destroy the reading order.
+- **Careful:** The survey does **not** say "augmentations are chosen ad hoc". What it does say is that there is no standard protocol, that augmentations must suit text, and that it gives no procedure for choosing them. Quote it that way.
+- **Why it matters:** It shows that choosing augmentations is a recognised, open problem and that the protocol must be fixed. We fixed ours on day one.
 
-### A3. Kišš & Hradiš, *Self-supervised Pre-training of Text Recognizers*, ICDAR 2024 [verified: abstract]
-- **Problem:** Can unlabelled historical lines replace costly transcriptions?
-- **How:** Pretrain a line recogniser's encoder on unlabelled lines, then fine-tune with different amounts of labels. Two families: **masked label prediction** (the model predicts a discrete code for masked parts; codes from Feature Quantization, VQ-VAE or Post-Quantized AE) and **joint-embedding** (VICReg, NT-Xent). They add an **image-shifting trick** so the joint-embedding model does not "cheat" by using only position encodings and ignoring the image. Data: historical handwriting (Bentham) and historical printed text. Code: github.com/DCGM/pero-pretraining (BSD-2).
+### A3. Kišš & Hradiš, *Self-supervised Pre-training of Text Recognizers*, ICDAR 2024 (arXiv 2405.00420)
+- **Problem:** Can unlabelled historical lines replace expensive transcriptions?
+- **How:** Pretrain the recogniser's encoder on unlabelled lines, then fine-tune with different amounts of labels.
+  - **Masked label prediction:** the model predicts a discrete code for each masked region. Three ways to get the codes: Feature Quantization, VQ-VAE and Post-Quantized AE.
+  - **Joint embedding:** VICReg and NT-Xent. They add an **image-shifting** trick so the model can't collapse by using only position encodings and ignoring the image.
+  - **Data:** historical handwriting (Bentham) and historical printed text.
+  - **Code:** github.com/DCGM/pero-pretraining.
 - **Findings:** Pretraining on target-domain data is **very effective compared with training from scratch**, but it **struggles to beat transfer learning** from a closely related labelled domain.
-- **Why it matters to us:** (1) supervised transfer is a mandatory baseline; (2) it shows SSL is not a free win; (3) it is our starting code reference.
-- **Careful:** Our pilot did *not* beat scratch, which is weaker than their result. The honest reading is "our scale (30k lines, 34 min) was too small", not "pretraining never helps". The old slide said they found pretraining "does not always beat supervised training", which blurred this; the slide now states it correctly.
-- **Viva Q:** *Your pretraining failed. Does the literature agree?* → Partly. K&H show pretraining beats scratch but not transfer; our failure to beat scratch most likely comes from scale (Lacuna used 750k lines, we used 30k).
+- **Why it matters to us:** Supervised transfer must be a baseline, and SSL is not a free win.
+- **Careful:** Our pilot did not even beat scratch. The likely reason is scale (see A4).
 
-### A4. Vogler, Allen, Miller & Berg-Kirkpatrick, *Lacuna Reconstruction: Self-Supervised Pre-Training for Low-Resource Historical Document Transcription*, Findings of NAACL 2022 [verified: paper text]
-- **Core idea:** Like BERT's masked-word task, but on images: hide regions of a line image and make the model **pick the true hidden region out of distractors** taken from the same line (contrastive, not pixel rebuilding).
-- **How:** Convolutional feature extractor, then an LSTM or Transformer for context; pretrained on unlabelled lines; fine-tuned with CTC on very few transcribed lines. Data: Islamicate (Arabic-script) manuscripts and early-modern English printed books (Old Bailey).
-- **Findings:** Gains over training from scratch with as few as **30 labelled lines**. With **750k pretraining lines**, CER on Attar-Mubhij drops from **60.4% to 23.7%** in the 30-line setting.
-- **Why it matters:** Shows SSL works with tiny label budgets on historical data, and that it used ~25× more unlabelled lines than our pilot.
-- **Limit for us:** Masking/corruption is not matched to real damage.
+### A4. Vogler, Allen, Miller & Berg-Kirkpatrick, *Lacuna Reconstruction: Self-Supervised Pre-Training for Low-Resource Historical Document Transcription*, Findings of NAACL 2022 (arXiv 2112.08692)
+- **Core idea:** Like BERT's masked-word task, but on images. Hide regions of a line image and make the model **pick the true hidden region out of distractors** taken from the same line. It is contrastive, not pixel rebuilding.
+- **How:** A convolutional feature extractor, then an LSTM or Transformer for context. Pretrained on unlabelled lines, then fine-tuned with CTC on very few transcribed lines. Data: Islamicate (Arabic-script) manuscripts and early-modern English print (Old Bailey).
+- **Findings:** Gains over scratch with as few as **30 labelled lines**. With **750k pretraining lines**, CER on the Attar-Mubhij manuscripts drops from **60.4% to 23.7%** in the 30-line setting (checked in the paper's text).
+- **Why it matters:** SSL works with tiny label budgets on historical data, but it used ~25× more unlabelled lines than our pilot's 30k.
 
-### A5. Mitra, Mondal & Jawahar (IIIT Hyderabad), *Learning Beyond Labels: Self-Supervised Handwritten Text Recognition (LoGo-HTR)*, WACV 2026 [verified: search results]
-- **Core idea:** Two losses during pretraining: a **local contrastive loss** (neighbouring parts of the same word image should stay consistent) and a **global decorrelation loss** (features should not all collapse to the same thing; like VICReg's covariance term).
-- **How:** Pretrain on **SSL-HWD**, a new word-level set of about 10M images from 852 writers (2.08M labelled, 7.92M unlabelled); then fine-tune a transformer decoder with limited labels.
-- **Findings:** Beats prior state of the art on HTR benchmarks, including multilingual and historical ones, even with 20% of the labels.
-- **Limit for us:** Contrastive/decorrelation family, word level, no damage study. Note the scale: 10M images.
+### A5. Mitra, Mondal & Jawahar (IIIT Hyderabad), *Learning Beyond Labels: Self-Supervised Handwritten Text Recognition (LoGo-HTR)*, WACV 2026, pp. 6653–6663
+- **Core idea:** Two pretraining losses. A **local contrastive loss** keeps nearby parts of a word image consistent; a **global decorrelation loss** keeps the features varied so they don't all collapse to the same thing.
+- **How:** Pretrain on their new **SSL-HWD** set (about 10M word images from 852 writers: 2.08M labelled, 7.92M unlabelled), then fine-tune a transformer decoder with limited labels.
+- **Findings:** Beats prior state of the art on HTR benchmarks, including multilingual and historical ones, even with only 20% of the labels.
+- **Limit for us:** Contrastive family, word level, no damage study. Scale again: 10M images.
+- (Source: the WACV page and project page, logo-ssl.github.io. The full PDF was not readable here.)
 
-### A6. Aberdam et al., *Sequence-to-Sequence Contrastive Learning for Text Recognition (SeqCLR)*, CVPR 2021 [from memory]
-- **Core idea:** The first contrastive SSL for text. A text image is a **sequence**, so instead of contrasting whole images it splits the feature sequence into small windows ("instances") and contrasts matching windows between two augmented views.
-- **Key detail:** Augmentations must keep left-to-right alignment (no big horizontal crops or flips), which shows how **delicate augmentation choice** is for text.
-- **Findings:** Better than supervised training in low-label settings on handwriting (IAM, RIMES, CVL) and scene text.
-- **Use in our deck:** Named in the research-gap table as an example of hand-chosen augmentations.
+### A6. Aberdam, Litman, Tsiper, Anschel, Slossberg, Mazor, Manmatha & Perona, *Sequence-to-Sequence Contrastive Learning for Text Recognition (SeqCLR)*, CVPR 2021 (arXiv 2012.10873)
+- **Core idea:** The first contrastive SSL for text. A text image is a **sequence**, so each feature map is split into several **instances**, and matching instances from two augmented views are contrasted. One image gives several positive pairs.
+- **Three ways to form instances:** all-to-instance (average all frames; most robust to misalignment), window-to-instance (average a window of frames), frame-to-instance (each frame on its own).
+- **Augmentation lesson:** Horizontal flips and aggressive horizontal crops break the left-to-right alignment between the two views. This is why augmentation choice is delicate for text.
+- **Findings:** Beats non-sequential contrastive methods, beats supervised training when labels are few, and with all labels reaches state of the art on handwriting. Word error falls by 9.5% on IAM and 20.8% on RIMES. Datasets: IIIT5K (scene text), IAM and RIMES.
 
-### A7. Souibgui et al., *Text-DIAE: A Self-Supervised Degradation Invariant Autoencoder for Text Recognition and Document Enhancement*, AAAI 2023 [from memory]
-- **Core idea:** Pretrain a transformer autoencoder to **undo three degradations**: masking, blur and added background noise. Input is degraded, target is the clean image, so it learns degradation-invariant features.
-- **How:** ViT-style encoder, a light decoder for pretraining; afterwards the encoder is used for text recognition (with a sequence decoder) or for document enhancement.
-- **Findings:** Competitive or better than contrastive methods like SeqCLR on handwritten and scene-text recognition, with less pretraining data and no negative pairs.
-- **Why it is our closest neighbour:** It is "pretrain with damage, rebuild the clean image", exactly our ConvMAE setup. **Gap:** its degradations and strengths are hand-picked, and it does not test on held-out damage types, media or scripts.
-- **Viva Q:** *How are you different from Text-DIAE?* → They choose the damage by hand; we derive which damage, how often and how strong from measurements of real pages, and test on damage held out of training.
+### A7. Souibgui, Biswas, Mafla, Biten, Fornés, Kessentini, Lladós, Gomez & Karatzas, *Text-DIAE: A Self-Supervised Degradation Invariant Autoencoder for Text Recognition and Document Enhancement*, AAAI 2023 (arXiv 2203.04814)
+- **Core idea:** A **ViT-based autoencoder** pretrained to undo three degradations: **masking, blur and added background noise**. The input is degraded and the target is the clean image (unmasking, deblurring, denoising).
+- **Downstream tasks:** word-level handwritten recognition, scene-text recognition, and document enhancement (binarisation, deblurring).
+- **Findings, as the authors state them:**
+  - The best set of pretext tasks depends on the downstream task.
+  - **The closer a pretext task is to the downstream task, the better the model.**
+  - Faster convergence, and state of the art with **43× (handwriting) and 45× (scene text) less pretraining data** than contrastive methods such as SeqCLR.
+  - In the ablations, **adding noise did not help** recognition.
+- **Why it is our closest neighbour:** "Pretrain with damage, rebuild the clean image" is exactly our ConvMAE setup. Their own finding ("closer pretext task = better") supports our idea of matching the damage to real pages.
+- **Gap:** The degradations and their strengths are hand-picked, and nothing is tested on held-out damage, media or scripts.
+- **Viva Q:** *How are you different from Text-DIAE?* → They choose the damage by hand; we derive which damage, how often and how strong from real pages, and test on held-out damage.
 
-### A8. Guan et al., *PreP-OCR: A Complete Pipeline for Document Image Restoration and Enhanced OCR Accuracy*, ACL 2025 [verified: abstract]
+### A8. Guan, Lin, Xu, Liu, Zhao, Fan, Xu & Greene, *PreP-OCR: A Complete Pipeline for Document Image Restoration and Enhanced OCR Accuracy*, ACL 2025 (arXiv 2505.20429)
 - **Core idea:** Fix the image first, then fix the text.
-- **How:** (1) Make synthetic training pairs by rendering plain text with varied fonts and layouts and applying randomly ordered degradations; train an image-restoration model (with multi-directional patch extraction and fusion for large pages). (2) Run OCR. (3) A ByT5 language model, fine-tuned on synthetic historical text pairs, corrects remaining errors.
-- **Findings:** On 13,831 real historical pages (English, French, Spanish), CER is 63.9–70.3% lower than OCR on raw images.
-- **Limit for us:** Damage is synthetic with hand-set ranges; it restores images instead of making the recogniser robust.
-- **Deck fix:** the venue was wrong (arXiv); it is ACL 2025. Fixed on the literature slide and in the references.
+- **How:**
+  1. Render plain text with varied fonts and layouts, apply degradations in random order, and train an image-restoration model on these pairs. It uses multi-directional patch extraction and fusion for large pages.
+  2. Run OCR.
+  3. A ByT5 language model, fine-tuned on synthetic historical text pairs, corrects what errors remain.
+- **Findings:** On 13,831 real historical pages (English, French, Spanish), CER falls by 63.9–70.3% compared with OCR on the raw images.
+- **Limit for us:** Synthetic damage with hand-set ranges; it restores images instead of making the recogniser robust.
 
-### A9. Kanungo, Haralick, Baird, Stuetzle & Madigan, *A Statistical, Nonparametric Methodology for Document Degradation Model Validation*, TPAMI 2000 [from memory]
-- **Background:** Kanungo's earlier degradation model (1993) for **binary** (black/white) scans: pixels flip with a probability that depends on their distance from a stroke edge, then a morphological closing.
-- **This paper's idea:** How do you know a degradation model is realistic? Treat it as a statistics question: compare **distributions** of local pixel patterns in real vs synthetic images with a nonparametric two-sample test (permutation/bootstrap), and pick the parameters that make them indistinguishable.
-- **Why it matters:** This is the old root of "fit damage to real scans". It is **not** our novelty, and we say so. Our step is to link the fit to what a **deep** recogniser learns to ignore.
-- **Echo in our work:** Our A2 check also compares distributions (with the KS distance).
+### A9. Kanungo, Haralick, Baird, Stuetzle & Madigan, *A Statistical, Nonparametric Methodology for Document Degradation Model Validation*, IEEE TPAMI 22(11):1209–1223, 2000
+- **Starting point:** Printing, photocopying and scanning degrade documents, and statistical models of that degradation are needed for document-image research.
+- **Idea:** Validating a degradation model becomes a **nonparametric hypothesis test**. Compare real and synthetic character images with simple character-distance functions, using a **permutation test** whose null distribution is built empirically.
+- **Findings:** With a large enough sample, the model can be rejected. The validation and power procedures work for any degradation model, and two models can be compared through their p-values.
+- **Background:** Kanungo's earlier (1993) model for black-and-white scans flips pixels with a probability that depends on their distance from a stroke edge, then applies a morphological closing.
+- **Why it matters:** This is the old root of "fit damage to real scans", so it is **not** our novelty. Our step is linking the fit to what a **deep** recogniser learns to ignore. Our A2 check echoes it: it also compares two distributions (KS distance instead of a permutation test).
 
-### A10. Baird, *The State of the Art of Document Image Degradation Modelling*, in *Digital Document Processing*, Springer 2007 [from memory]
-- **What it is:** A survey of physics-based degradation models (blur from the optics, thresholding, pixel sensitivity, jitter, speckle), how to estimate their parameters from real images, and how to validate them.
-- **Why it matters:** Supports our "physical form + fitted parameters" step and our claim that only some damage (capture, show-through) has clean physical models.
+### A10. Baird, *The State of the Art of Document Image Degradation Modelling*, in *Digital Document Processing* (B. B. Chaudhuri, ed.), Springer 2007, pp. 261–279
+- **What it is:** A survey of degradation models for printed documents. It separates two kinds of model: **explanatory** (physics: optics blur, pixel sensitivity, thresholding, jitter) and **descriptive** (statistics of what the damage looks like). It also covers estimating parameters from real images and validating models.
+- **Why it matters:** It supports our "physical form + fitted parameters" step, and our claim that only some damage has clean physical models.
+- (Bibliographic details and the explanatory/descriptive split checked via secondary sources. The chapter itself is behind Springer's paywall.)
 
-### A11. Groleau et al., *Augraphy: A Data Augmentation Library for Document Images*, arXiv 2208.14558, 2022 (ICDAR 2023) [from memory]
-- **What it is:** A Python library of realistic document damage organised in three phases: **ink** (bleed, low ink, ink shifts), **paper** (texture, stains, folding, bleed-through) and **post** (lighting, shadows, JPEG, scanner effects). Each effect is a class, so you can switch one off.
-- **Use:** Made the ShabbyPages dataset; used for denoising and robustness.
-- **Limit for us:** Which effects to use, and how strong, is left to the user. That is exactly the choice we try to derive.
-- **Our implementation note:** In the pilot we wrote our own 7 simple damage functions (lwti/damage/families.py) instead of Augraphy, so we can control and measure each one.
+### A11. Groleau, Chee, Larson, Maini & Boarman, *Augraphy: A Data Augmentation Library for Document Images*, arXiv 2208.14558 (v2 2023; published at ICDAR 2023)
+- **What it is:** A Python library with **26 augmentations**, arranged as a pipeline that follows a document's life in **three phases**:
+  - **Ink:** how ink goes onto the page (bleed, low ink, etc.).
+  - **Paper:** the paper itself; this phase includes **BleedThrough**.
+  - **Post:** what happens to the printed page afterwards (folding, stains, lighting, scanning, faxing).
+- **Uses shown in the paper:** making training data for document denoising (a denoising CNN trained on Augraphy data), and making hard test data for robustness checks.
+- **Limit for us:** Which effects to use, and how strong, is left to the user. That is exactly the choice we derive.
+- **Our implementation:** We wrote our own 7 simple damage functions (lwti/damage/families.py) so we can control and measure each one.
 
-### A12. Ericsson, Gouk & Hospedales, *Why Do Self-Supervised Models Transfer? Investigating the Impact of Invariance on Downstream Tasks*, BMVC 2022 [from memory]
-- **Core idea:** SSL models learn to ignore ("be invariant to") the augmentations used in pretraining. Different downstream tasks need different invariances: e.g. ignoring colour helps object recognition but hurts tasks where colour matters.
-- **How they measure it:** Pass an image and its transformed version through the encoder, standardise the features, and take the cosine similarity: high = invariant.
-- **Findings:** Invariances to different augmentations (spatial vs appearance) help different tasks; mixing models with different invariances transfers better.
-- **Our use:** Our invariance score follows their style (see C-s below). **Limit:** natural images only; we apply it to text recognition and to document damage.
+### A12. Ericsson, Gouk & Hospedales, *Why Do Self-Supervised Models Transfer? On the Impact of Invariance on Downstream Tasks*, BMVC 2022 (arXiv 2111.11398; the v1 title read "Investigating the Impact of Invariance...")
+- **Core idea:** Contrastive SSL models learn to ignore ("be invariant to") the augmentations used in pretraining. This invariance partly carries over to real pose and lighting changes. Different downstream tasks favour **opposing** invariances, so the standard augmentation recipe can hurt some tasks.
+- **How they measure invariance:** Two measures between an image and its transformed copy, averaged over images:
+  1. the **Mahalanobis distance** between the two feature vectors (small = invariant);
+  2. the **cosine similarity** after standardising the features: subtract the mean feature and whiten with the full feature covariance, via a Cholesky factor.
+- **Proposed fix:** Fuse representations with complementary invariances, which transfers better across tasks.
+- **Our use, and an honest difference:** Our score is their cosine version, but we standardise **each feature separately** (mean 0, spread 1). That is a diagonal approximation, not the full-covariance whitening. If asked, say: "a simplified, per-feature version of Ericsson's measure."
 
-### A13. Mintun, Kirillov & Xie, *On Interaction Between Augmentations and Corruptions in Natural Corruption Robustness*, NeurIPS 2021 [from memory]
-- **Core idea:** Augmentations help robustness mainly when they are **similar to the test corruptions**. They define a distance between augmentation and corruption distributions (Minimal Sample Distance) and show it predicts the error.
-- **Striking result:** Models tuned on ImageNet-C partly overfit to its corruption types; on a new set of dissimilar corruptions (ImageNet-C̄) the gains shrink.
-- **Why it matters:** It is the strongest argument for deriving damage from real pages: if training damage must resemble test damage, measure the test damage. It is also why we hold out ink loss: to test damage the model never saw.
+### A13. Mintun, Kirillov & Xie, *On Interaction Between Augmentations and Corruptions in Natural Corruption Robustness*, NeurIPS 2021 (arXiv 2102.11273)
+- **Core idea:** They build a feature space for image transforms and define the **Minimal Sample Distance (MSD)** between an augmentation and a test corruption. It measures how close the nearest augmentation samples come to the corruption, not how close the two distributions' centres are (which is what MMD measures).
+- **Findings:**
+  - Robustness correlates strongly with this similarity: augmentations perceptually close to the corruptions help most.
+  - Recent augmentation methods lose much of their gain when the test corruptions are sampled to be perceptually **dissimilar** from ImageNet-C. For this they build new benchmark sets of dissimilar corruptions.
+  - Gains carry over among perceptually similar transforms.
+- **Why it matters:** It is the strongest argument for deriving damage from real pages (match training damage to test damage), and for holding out ink loss (test on damage the model never saw).
 
-### A14. He et al., *Masked Autoencoders Are Scalable Vision Learners (MAE)*, CVPR 2022 [from memory]
-- **How:** Cut the image into patches, hide 75% at random, encode only the visible ones, a light decoder rebuilds the hidden pixels, loss = mean squared error on hidden patches. After pretraining, the decoder is thrown away.
-- **Our version (ConvMAE, lwti/models/conv_mae.py):** Same idea on the CRNN's own CNN: hide 60% of 8-px vertical strips of the line, rebuild the clean pixels; damage is added to the input before masking, so the model must rebuild the clean line (masked + denoising autoencoder). We moved from a ViT to a CNN because the small ViT memorised the few labelled lines.
+### A14. He, Chen, Xie, Li, Dollár & Girshick, *Masked Autoencoders Are Scalable Vision Learners (MAE)*, CVPR 2022 (arXiv 2111.06377)
+- **How:** Cut the image into patches and hide a large random subset (**75%**). The encoder sees only the visible patches; a light decoder rebuilds the hidden pixels. The loss is the mean squared error on the hidden patches (pixels normalised per patch). The decoder is thrown away after pretraining.
+- **Why such a high mask:** It makes the task hard enough that the model can't solve it by copying from neighbours.
+- **Our version (lwti/models/conv_mae.py):** The same idea on the CRNN's own CNN. We hide 60% of 8-px vertical strips and rebuild the **clean** pixels from a damaged input, so it is a masked and denoising autoencoder.
 
-### A15. Shi, Bai & Yao, *An End-to-End Trainable Neural Network for Image-based Sequence Recognition (CRNN)*, TPAMI 2017 [from memory]
-- **How:** CNN turns the line into a sequence of feature columns → bidirectional LSTM reads the sequence → **CTC** loss aligns the output with the text without per-character positions. No character segmentation needed.
-- **Our version (lwti/models/crnn.py):** 7.4M parameters, 64-px high grey lines, CNN outputs 384 numbers per column (one column per 4 px of width).
-- **CTC in one line (Graves et al., ICML 2006):** the model outputs a letter or "blank" for each column; repeats and blanks are collapsed ("hh-e-ll-ll-o" → "hello"), and the loss sums over all alignments that give the right text.
+### A15. Shi, Bai & Yao, *An End-to-End Trainable Neural Network for Image-based Sequence Recognition and Its Application to Scene Text Recognition (CRNN)*, TPAMI 2017 (arXiv 1507.05717)
+- **How:** Three parts.
+  1. Convolutional layers turn the image into a sequence of feature frames.
+  2. A deep bidirectional LSTM gives a label distribution for each frame.
+  3. A transcription layer (CTC) turns the frames into text, with no need to know where each character is.
+- **Findings:** Trained end to end, no character segmentation needed, handles any text length, and has far fewer parameters than standard deep CNNs. Strong on scene-text benchmarks.
+- **Our version (lwti/models/crnn.py):** 7.4M parameters, 64-px-high grey lines; the CNN outputs 384 numbers per column (one column per 4 px).
+- **CTC (Graves et al., ICML 2006):** The model outputs a letter or "blank" for each frame. Repeats and blanks are collapsed ("hh-e-ll-ll-o" → "hello"), and the loss sums over every alignment that gives the right text.
 
-### A16. Clérice et al., *CATMuS Medieval: a multilingual large-scale cross-century dataset in Latin script for HTR*, ICDAR 2024 [partly verified]
-- Medieval manuscript lines from many projects, 8th–16th century, about 10 languages, all in Latin script, with shared transcription guidelines (abbreviations kept as written). On Hugging Face: about 195k lines (153k train / 19.4k val / 22.6k test), CC BY 4.0.
-- **Our use:** the source of **real damage**: measuring it, pretraining, and testing. The test split is from manuscripts not seen in training.
+### A16. Clérice, Pinche, Vlachou-Efstathiou, Chagué, Camps, Gille Levenson, Brisville-Fertin, Boschetti, Fischer, Gervers, Boutreux, Manton, Gabay, O'Connor, Haverals, Kestemont, Vandyck & Kiessling, *CATMuS Medieval: A Multilingual Large-Scale Cross-Century Dataset in Latin Script for Handwritten Text Recognition and Beyond*, ICDAR 2024 (LNCS 14806, pp. 174–194)
+- **Content:**
+  - The paper: about 200 manuscripts and incunabula, 8th–16th century, more than 160,000 lines and about 5 million characters, around 10 languages (Latin, Old and Middle French, Spanish, Italian, Middle Dutch and others).
+  - Shared transcription guidelines: graphemic, abbreviations kept as written.
+  - The Hugging Face release has grown to about 195k lines (153k train / 19.4k validation / 22.6k test), CC BY 4.0.
+- **Our use:** The source of real damage (measuring, pretraining, testing). Its test split comes from manuscripts not seen in training.
+- **Say it this way:** "about 195k lines in the current release (more than 160k in the paper)".
 
-### A17. Marti & Bunke, *The IAM-database*, IJDAR 2002 [from memory]
-- Modern English handwriting, 657 writers. We use the Teklia/IAM-line version on Hugging Face: 6,482 train / 976 validation / 2,915 test lines, writer-independent split (no writer appears in both train and test).
-- **Our use:** clean baseline, and the clean base onto which we add synthetic damage.
+### A17. Marti & Bunke, *The IAM-database: An English Sentence Database for Off-line Handwriting Recognition*, IJDAR 5:39–46, 2002
+- 657 writers, 1,539 scanned pages, 5,685 sentences, **13,353 text lines** and 115,320 words. The text comes from the LOB corpus of British English. Non-commercial research use only; registration is needed on the official site.
+- **Our version:** Teklia/IAM-line on Hugging Face, 6,482 train / 976 validation / 2,915 test lines (10,373 in total, because this split doesn't use all 13,353 lines). The split is writer-independent: no writer appears in both train and test.
 
-### A18. PaddleOCR (PP-OCR series), PaddlePaddle [from memory]
-- An industrial OCR toolkit: text detection → orientation check → line recogniser. We use only its recogniser, off the shelf, as a "what does a ready-made OCR get" reference: 11.4% CER on IAM, 52.5% on CATMuS (it was never trained on medieval script).
+### A18. PaddleOCR (PP-OCR series), PaddlePaddle, GitHub toolkit
+- An industrial OCR toolkit: text detection, then orientation classification, then a line recogniser. We used its recogniser off the shelf as a "what does a ready-made OCR get" reference: 11.4% CER on IAM, 52.5% on CATMuS (it was never trained on medieval script). It is cited as a software repository, not a paper.
 
-### A19. Background named in the deck but not in the reference list
-- **VICReg** (Bardes, Ponce & LeCun, ICLR 2022): joint-embedding SSL with three terms: **v**ariance (keep each feature dimension spread out), **i**nvariance (two views should give similar features), **c**ovariance (dimensions should not be redundant). In our objective 4 as a "non-reconstruction" control. Not run yet.
-- **Recto–verso / show-through models** (e.g. Sharma, IEEE TIP 2001, show-through cancellation in duplex scans): show-through is modelled as a blurred, attenuated, mirrored copy of the back page added to the front. Our show-through damage follows this idea in simplified form.
+### A19. Background named in the deck or report
+- **VICReg** (Bardes, Ponce & LeCun, ICLR 2022): joint-embedding SSL with three terms. **V**ariance keeps each feature dimension spread out, **i**nvariance makes two views give similar features, and **c**ovariance stops dimensions from repeating each other. Variance and covariance are applied to each branch separately. It is in our objective 4 as a non-reconstruction control (not run yet).
+- **Salerno & Tonazzini**, *Highly Degraded Recto-Verso Document Image Processing and Understanding*, ERCIM News 95, 2013 (the reference in our report):
+  - **Model:** Each side of the page = its own ink + a **blurred and attenuated** copy of the other side, as two coupled nonlinear equations in optical density. The blur kernels are fixed; the strength (gain) of the show-through varies across the page. The nonlinearity follows Sharma's work on show-through.
+  - **Removal:** Estimate the blur kernels, compute the per-pixel gains in closed form, then recover the front and back by constrained maximum likelihood.
+  - **Our show-through function is a simplified version:** mirrored, shifted, blurred back page, one global opacity `p`, and it can only darken.
 
 ---
 
 ## Part B. Literature survey and research gap, as you would say them
 
 **The story in four steps:**
-1. **SSL for text works, but its recipe is hand-made.** SeqCLR, Lacuna, Text-DIAE, Kišš & Hradiš and LoGo-HTR all pretrain on unlabelled lines and gain when labels are few. The survey (Penarrubia 2025) notes that augmentations are chosen ad hoc. Garrido-Munoz 2026 shows reconstruction is the right family for handwriting.
+1. **SSL for text works, but its recipe is hand-made.** SeqCLR, Lacuna, Text-DIAE, Kišš & Hradiš and LoGo-HTR all pretrain on unlabelled lines and gain when labels are few. The survey (Penarrubia 2025) finds no standard evaluation protocol and stresses that augmentations must fit text data, but gives no procedure for choosing them. Text-DIAE itself found that the closer the pretext task is to the downstream task, the better. Garrido-Munoz 2026 shows reconstruction is the right family for handwriting.
 2. **Damage simulation is mature, but its settings are left to the user.** Augraphy and PreP-OCR simulate damage well, but someone has to pick which damage and how strong.
 3. **Fitting damage to real scans is old.** Kanungo/Haralick/Baird did it for binary pages and classic OCR. It was never linked to what a deep recogniser learns.
 4. **Invariance and robustness theory says the choice matters.** Ericsson: different tasks need different invariances. Mintun: augmentations help when they resemble the test corruptions.

@@ -268,7 +268,7 @@ description: "UE24CS320A Capstone Project Approval"
 
 | Paper: title, authors, venue | Methodology | Result | Limitation for us |
 |---|---|---|---|
-| *Self-Supervised Learning for Text Recognition: A Critical Survey*<br>Penarrubia, Valero-Mas & Calvo-Zaragoza, IJCV 2025 | Surveys SSL methods for text recognition and how they are evaluated | Protocols differ between papers; augmentations are chosen ad hoc | Maps the field but gives no way to choose the augmentations |
+| *Self-Supervised Learning for Text Recognition: A Critical Survey*<br>Penarrubia, Valero-Mas & Calvo-Zaragoza, IJCV 2025 | Surveys SSL methods for text recognition and how they are evaluated | No standard evaluation protocol; augmentations must suit text data | Maps the field but gives no way to choose the augmentations |
 | *Self-supervised Pre-training of Text Recognizers*<br>Kišš & Hradiš, ICDAR 2024 | Masked pretraining on unlabelled historical lines, then fine-tuning; code is public | Gains from pretraining in some settings, compared against supervised transfer | Not always better than supervised transfer; damage not studied. Our starting code |
 | *Lacuna Reconstruction: Self-Supervised Pre-Training for Low-Resource Historical Document Transcription*<br>Vogler et al., NAACL Findings 2022 | Masked-region pretraining with distractors on unlabelled lines | With 30 labelled lines, CER falls from 60.4% to 23.7% | Corruptions are not matched to real damage |
 | *Learning Beyond Labels: Self-Supervised Handwritten Text Recognition (LoGo-HTR)*<br>Mitra, Mondal & Jawahar, WACV 2026 | Local–global contrastive pretraining on about 10M unlabelled word images, then fine-tuning | Gains when labels are scarce | Contrastive family; no damage study |
@@ -276,7 +276,7 @@ description: "UE24CS320A Capstone Project Approval"
 
 </div>
 
-<!-- 1:00 · Say: Five papers on self-supervised pretraining for text. Penarrubia is the survey: it shows protocols differ and augmentations are chosen ad hoc. Kišš and Hradiš is why supervised transfer is a mandatory baseline, and our starting code. Lacuna shows SSL works with very few labels on historical lines. LoGo-HTR is the contrastive family. Text-DIAE is the closest on degradation invariance, but its degradations are hand-picked. The common limitation: the damage choices are made by hand. -->
+<!-- 1:00 · Say: Five papers on self-supervised pretraining for text. Penarrubia is the survey: it shows there is no standard evaluation protocol and that augmentations must suit text, with no procedure for choosing them. Kišš and Hradiš is why supervised transfer is a mandatory baseline, and our starting code. Lacuna shows SSL works with very few labels on historical lines. LoGo-HTR is the contrastive family. Text-DIAE is the closest on degradation invariance, but its degradations are hand-picked. The common limitation: the damage choices are made by hand. -->
 
 ---
 
@@ -292,7 +292,7 @@ description: "UE24CS320A Capstone Project Approval"
 | *PreP-OCR: A Complete Pipeline for Document Image Restoration and Enhanced OCR Accuracy*<br>Guan et al., ACL 2025 | Restoration model trained on synthetic damage, OCR, then a language model corrects the text | Character error 63.9–70.3% lower than OCR on raw pages | Damage levels set by hand; restores images, does not train a recogniser |
 | *A Statistical, Nonparametric Methodology for Document Degradation Model Validation*<br>Kanungo, Haralick, Baird, Stuetzle & Madigan, TPAMI 2000 | Fit and validate degradation models against real scans | Synthetic pages statistically close to real ones | Built for classic OCR on binary pages; not what a deep model ignores |
 | *Augraphy: A Data Augmentation Library for Document Images*<br>Groleau et al., arXiv 2022 | Library of ink, paper and lighting damage effects | Realistic synthetic document damage | Which damage, and how strong, is left to the user |
-| *Why Do Self-Supervised Models Transfer? Investigating the Impact of Invariance on Downstream Tasks*<br>Ericsson, Gouk & Hospedales, BMVC 2022 | Measures how invariant a model is to each augmentation | Different tasks need different invariances | Natural images only; not text. We reuse the measure |
+| *Why Do Self-Supervised Models Transfer? On the Impact of Invariance on Downstream Tasks*<br>Ericsson, Gouk & Hospedales, BMVC 2022 | Measures how invariant a model is to each augmentation | Different tasks need different invariances | Natural images only; not text. We reuse the measure |
 | *On Interaction Between Augmentations and Corruptions in Natural Corruption Robustness*<br>Mintun, Kirillov & Xie, NeurIPS 2021 | Measures how similar training augmentations are to test corruptions | Similarity predicts robustness | Supervised, natural images; corruptions are not derived from data |
 
 </div>
@@ -510,12 +510,20 @@ Decided by evidence, loop by loop: which damage types to model, backbone and mod
 
 ---
 
+# Pretraining: hide parts of a line, rebuild it clean
+
+<img src="assets/img/pilot/fig_pretrain_mask_rebuild.png" style="width:1152px; display:block; margin:0 auto;">
+
+<div class="card mt2" style="padding:16px 22px;"><p style="font-size:16.5px; line-height:1.45; margin:0;"><b>Pretraining</b> = before using any labels, the CNN learns to rebuild lines with 60% of the 8-pixel strips hidden (damage added first; it must rebuild the clean line). 30,244 unlabelled lines (CATMuS + IAM training lines, text thrown away), 34 minutes. Then the whole CRNN is trained on the few labelled lines.</p></div>
+
+<!-- 0:40 · Say: This is the pretraining task, with real outputs from our derived-damage run. Row 1 is the input with damage, row 2 is what the model actually sees with 60% of the strips hidden, row 3 is what it draws back, row 4 is the clean target it is scored against. Left a real CATMuS line with noise added, right an IAM line. The rebuild is blurry where whole letters were hidden: it learns texture and stroke shape well, but not which letter is which, which may be one reason pretraining did not help the reader. -->
+
+---
+
 # Does pretraining help? (A3, A4)
 
 <style scoped>table td, table th { padding: 10px 14px !important; font-size: 16.5px; }</style>
 <div class="col" style="gap:26px;">
-
-<div class="card" style="padding:16px 22px;"><p style="font-size:16.5px; line-height:1.45; margin:0;"><b>Pretraining</b> = before using any labels, the CNN learns to rebuild lines with 60% of the 8-pixel strips hidden (damage added first; it must rebuild the clean line). 30,244 unlabelled lines (CATMuS + IAM training lines, text thrown away), 34 minutes. Then the whole CRNN is trained on the few labelled lines.</p></div>
 
 <div class="t-neutral">
 
@@ -710,7 +718,7 @@ If asked, the limits of this pilot result: (a) the big synthetic IAM gain (37.9%
 <div><span>3</span><span>Kišš &amp; Hradiš. <a href="https://arxiv.org/abs/2405.00420"><i>Self-supervised Pre-training of Text Recognizers.</i></a> ICDAR, 2024.</span></div>
 <div><span>4</span><span>Vogler et al. <a href="https://arxiv.org/abs/2112.08692"><i>Lacuna Reconstruction: Self-Supervised Pre-Training for Low-Resource Historical Document Transcription.</i></a> Findings of NAACL, 2022.</span></div>
 <div><span>5</span><span>Souibgui et al. <a href="https://arxiv.org/abs/2203.04814"><i>Text-DIAE: A Self-Supervised Degradation Invariant Autoencoder for Text Recognition and Document Enhancement.</i></a> AAAI, 2023.</span></div>
-<div><span>6</span><span>Ericsson, Gouk &amp; Hospedales. <a href="https://arxiv.org/abs/2111.11398"><i>Why Do Self-Supervised Models Transfer? Investigating the Impact of Invariance on Downstream Tasks.</i></a> BMVC, 2022.</span></div>
+<div><span>6</span><span>Ericsson, Gouk &amp; Hospedales. <a href="https://arxiv.org/abs/2111.11398"><i>Why Do Self-Supervised Models Transfer? On the Impact of Invariance on Downstream Tasks.</i></a> BMVC, 2022.</span></div>
 <div><span>7</span><span>Mintun, Kirillov &amp; Xie. <a href="https://arxiv.org/abs/2102.11273"><i>On Interaction Between Augmentations and Corruptions in Natural Corruption Robustness.</i></a> NeurIPS, 2021.</span></div>
 <div><span>8</span><span>Mitra, Mondal &amp; Jawahar. <a href="https://openaccess.thecvf.com/content/WACV2026/html/Mitra_Learning_Beyond_Labels_Self-Supervised_Handwritten_Text_Recognition_WACV_2026_paper.html"><i>Learning Beyond Labels: Self-Supervised Handwritten Text Recognition (LoGo-HTR).</i></a> WACV, 2026.</span></div>
 <div><span>9</span><span>Guan et al. <a href="https://arxiv.org/abs/2505.20429"><i>PreP-OCR: A Complete Pipeline for Document Image Restoration and Enhanced OCR Accuracy.</i></a> ACL, 2025.</span></div>
