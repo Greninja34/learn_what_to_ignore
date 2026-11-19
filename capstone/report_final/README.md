@@ -30,7 +30,6 @@ roughly 17–19. If the total goes over 25, cut in this order:
 
 ## Things to check or fill in before submitting
 
-- SRNs and the guide's designation (front matter).
 - Template certificate typos: UE23CS320A → UE24CS320A, "Aug 2025" → Aug 2026.
 - Two references lack first-author initials (LoGo-HTR [11]: "Mitra, Mondal";
   PreP-OCR [16]: "Guan et al."). Look them up and add initials.

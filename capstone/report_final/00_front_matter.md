@@ -13,28 +13,32 @@ full abstract for page 5. Pages 6 onwards are in `report.md`.
 - Submitted in partial fulfillment of the requirements for **Bachelor of Technology in Computer Science & Engineering**
 - Course: **UE24CS320A – Capstone Project Phase - 1**
 - Submitted by (name + SRN, one row each):
-  - Arvind Kothamangala, `<SRN>`
-  - Atharv Sawarkar, `<SRN>`
-  - Vignesh Nunna, `<SRN>`
-  - Rohit Rajan, `<SRN>`
-- Under the guidance of: **Dr. Chandrashekar P Chavan**, `<Designation>`, PES University
+  - Arvind Kothamangala, PES2UG24CS628
+  - Atharv Sawarkar, PES2UG24CS670
+  - Vignesh Nunna, PES2UG24CS582
+  - Rohit Rajan, PES2UG25CS821
+- Under the guidance of: **Dr. Chandrashekar P Chavan**, Associate Professor, PES University
 - **Aug–Dec 2026**
 - Department of Computer Science and Engineering, Faculty of Engineering, PES University (keep the template's address block and logo)
 
 ## Page 2: Certificate (template: "Page 1-2.docx", second page)
 
 - Dissertation title: **'Learning What to Ignore: Deriving Invariance for Self-Supervised Text Recognition'**
-- The same four names with SRNs
-- Guide signature block: **Dr. Chandrashekar P Chavan**, `<Designation>`; Chairperson block: **Dr. Sandesh B J**
+- The same four names with SRNs (as on page 1)
+- Guide signature block: **Dr. Chandrashekar P Chavan**, Associate Professor; Chairperson block: **Dr. Sandesh B J**
 - Leave the External Viva table empty.
 - **Fix two typos in the template text:** it says "(UE23CS320A)" and "Aug 2025 – Dec. 2026". Use **UE24CS320A** and **Aug – Dec 2026**.
 
 ## Page 3: Declaration (template: "Page 3-8.docx", page 1)
 
 - Project title in quotes: "Learning What to Ignore: Deriving Invariance for Self-Supervised Text Recognition"
-- Guide: Dr. Chandrashekar P Chavan, `<Designation>`
+- Guide: Dr. Chandrashekar P Chavan, Associate Professor
 - Semester: Aug – Dec 2026
-- Table: SRN | Name | Signature, one row per member.
+- Table: SRN | Name | Signature, one row per member:
+  - PES2UG24CS628 | Arvind Kothamangala
+  - PES2UG24CS670 | Atharv Sawarkar
+  - PES2UG24CS582 | Vignesh Nunna
+  - PES2UG25CS821 | Rohit Rajan
 
 ## Page 4: Acknowledgement (template: "Page 3-8.docx", page 2)
 
