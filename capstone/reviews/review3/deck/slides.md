@@ -558,7 +558,7 @@ Decided by evidence, loop by loop: which damage types to model, backbone and mod
 <div class="card" style="gap:8px;"><div class="kicker">Easy task</div><p style="font-size:18px; line-height:1.45; margin:0;">Rebuilding small gaps teaches texture, which normal training learns within minutes anyway.</p></div>
 </div>
 
-<div class="band white mt"><p>Kišš & Hradiš (slide 16) beat scratch with far more data; we did not even beat scratch, so scale is the likely cause. Phase 2 gives pretraining one bounded retry (E3).</p></div>
+<div class="band white mt"><p>Kišš & Hradiš beat scratch with far more data; we did not even beat scratch, so scale is the likely cause. Phase 2 gives pretraining one bounded retry (E3).</p></div>
 
 <!-- 0:40 · Say: These three are our guesses for why pretraining did not help, and none is tested yet, so read them as the next checks. Scale: Lacuna Reconstruction pretrained on 750k lines, we used 30k. The other two are about how fine-tuning treats the pretrained weights and how easy the rebuild task is. Kišš and Hradiš: target-domain pretraining beats scratch, but struggles to beat transfer from a closely related labelled dataset; this is why supervised transfer is a mandatory baseline for us. -->
 
@@ -566,19 +566,18 @@ Decided by evidence, loop by loop: which damage types to model, backbone and mod
 
 # Use the damage as augmentation
 
-<div class="row" style="gap:28px; align-items:flex-start;">
-<img src="assets/img/pilot/expl_aug.jpg" style="height:500px; flex:0 0 auto; border-radius:8px; border:1px solid var(--rule);">
+<div class="row" style="gap:26px; align-items:flex-start;">
+<img src="assets/img/pilot/fig_aug_one_line.png" style="width:700px; flex:0 0 auto; border-radius:8px; border:1px solid var(--rule); padding:10px; background:#fff;">
 <div class="col" style="gap:12px; flex:1 1 auto;">
-<div class="card" style="padding:16px 20px;"><p style="font-size:17px; line-height:1.45; margin:0;"><b>The idea:</b> show the model the same labelled line many times, each time with different fake damage, but always with the same correct text. To get the answer right, it has to learn to look past the damage.</p><p style="font-size:17px; line-height:1.45; margin:6px 0 0;"><b>Augmentation</b> = change the training image, keep its label. The damage is drawn afresh on every pass over the data. No pretraining and no extra lines are needed. The picture, top to bottom: 4 real training lines as they are; with hand-picked damage (2 random draws each); with derived damage (2 draws each); after the clean-up filter.</p></div>
-<div class="card" style="gap:4px; padding:14px 20px;"><div class="kicker">No augmentation</div><p style="font-size:17px; line-height:1.45; margin:0;">The plain model, trained on the lines as they are.</p></div>
-<div class="card" style="gap:4px; padding:14px 20px;"><div class="kicker">+ hand-picked damage</div><p style="font-size:17px; line-height:1.45; margin:0;">The usual guess, with damage types chosen by hand.</p></div>
-<div class="card accent" style="gap:4px; padding:14px 20px;"><div class="kicker accent">+ derived damage</div><p style="font-size:17px; line-height:1.45; margin:0;">Our recipe, measured on real lines.</p></div>
-<div class="card" style="gap:4px; padding:14px 20px;"><div class="kicker">Background normalisation</div><p style="font-size:17px; line-height:1.45; margin:0;">A control: a plain filter flattens the paper tone before the model sees the line. No learning. It asks: could a simple clean-up do the same?</p></div>
-<p class="small meta" style="margin:0;">For these results, validation and test lines are never damaged; only training lines are.</p>
+<div class="card" style="gap:6px; padding:14px 18px;"><div class="kicker">The idea</div><p style="font-size:16px; line-height:1.45; margin:0;">Show the model the same labelled line many times, each time with different fake damage, but always with the same correct text. To get it right, it must learn to look past the damage.</p></div>
+<div class="card" style="gap:6px; padding:14px 18px;"><div class="kicker">Augmentation</div><p style="font-size:16px; line-height:1.45; margin:0;">Change the training image, keep its label. Damage is drawn afresh on every pass. No pretraining, no extra lines.</p></div>
+<div class="card accent" style="gap:6px; padding:14px 18px;"><div class="kicker accent">Compared</div><p style="font-size:16px; line-height:1.45; margin:0;">No augmentation · hand-picked · <b>derived</b> · a clean-up filter that flattens the paper (control: could simple clean-up do the same?)</p></div>
 </div>
 </div>
 
-<!-- 0:40 · Say: The picture shows four CATMuS training lines in four versions: the clean line first, then hand-picked damage, derived damage and background normalisation. Damage only changes the training images; the text label stays the same, and nothing is pretrained. The control asks whether flattening the paper tone alone gives the same gain. -->
+<p class="small meta" style="margin-top:14px;">Picture: one real CATMuS training line. Only training lines are damaged; validation and test lines never are.</p>
+
+<!-- 0:40 · Say: The picture is one real CATMuS training line: as it is, with two random draws of hand-picked damage, two of derived damage, and after the clean-up filter. Damage only changes the training images; the text label stays the same, and nothing is pretrained. The control asks whether flattening the paper tone alone gives the same gain. -->
 
 ---
 
