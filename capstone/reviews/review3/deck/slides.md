@@ -269,7 +269,7 @@ description: "UE24CS320A Capstone Project Approval"
 | Paper: title, authors, venue | Methodology | Result | Limitation for us |
 |---|---|---|---|
 | *Self-Supervised Learning for Text Recognition: A Critical Survey*<br>Penarrubia, Valero-Mas & Calvo-Zaragoza, IJCV 2025 | Surveys SSL methods for text recognition and how they are evaluated | No standard evaluation protocol; augmentations must suit text data | Maps the field but gives no way to choose the augmentations |
-| *Self-supervised Pre-training of Text Recognizers*<br>Kišš & Hradiš, ICDAR 2024 | Masked pretraining on unlabelled historical lines, then fine-tuning; code is public | Gains from pretraining in some settings, compared against supervised transfer | Not always better than supervised transfer; damage not studied. Our starting code |
+| *Self-supervised Pre-training of Text Recognizers*<br>Kišš & Hradiš, ICDAR 2024 | Masked pretraining on unlabelled historical lines, then fine-tuning; code is public | Clearly beats training from scratch; struggles to beat transfer from a related labelled dataset | SSL is not a free win, so supervised transfer is a must-have baseline; damage not studied |
 | *Lacuna Reconstruction: Self-Supervised Pre-Training for Low-Resource Historical Document Transcription*<br>Vogler et al., NAACL Findings 2022 | Masked-region pretraining with distractors on unlabelled lines | With 30 labelled lines, CER falls from 60.4% to 23.7% | Corruptions are not matched to real damage |
 | *Learning Beyond Labels: Self-Supervised Handwritten Text Recognition (LoGo-HTR)*<br>Mitra, Mondal & Jawahar, WACV 2026 | Local–global contrastive pretraining on about 10M unlabelled word images, then fine-tuning | Gains when labels are scarce | Contrastive family; no damage study |
 | *Text-DIAE: A Self-Supervised Degradation Invariant Autoencoder for Text Recognition and Document Enhancement*<br>Souibgui et al., AAAI 2023 | Autoencoder pretrained to undo masking, blur and noise | Degradation-invariant features for recognition and enhancement | Degradations and their strengths are hand-picked |
@@ -553,13 +553,12 @@ Decided by evidence, loop by loop: which damage types to model, backbone and mod
 <p style="font-size:17px; line-height:1.45;" class="meta">Our explanations; not yet tested.</p>
 
 <div class="grid3">
-<div class="card" style="gap:8px;"><div class="kicker">Too little data</div><p style="font-size:18px; line-height:1.45; margin:0;">We pretrained on 30k lines for 34 minutes. Lacuna Reconstruction used 750k lines to cut the error from 60.4% to 23.7%.</p></div>
+<div class="card" style="gap:8px;"><div class="kicker">Too little data</div><p style="font-size:18px; line-height:1.45; margin:0;">We pretrained on 30k lines for 34 minutes. Lacuna Reconstruction used 750k <b>unlabelled</b> lines and only 30 labelled ones to cut the error from 60.4% to 23.7%.</p></div>
 <div class="card" style="gap:8px;"><div class="kicker">Start washed out</div><p style="font-size:18px; line-height:1.45; margin:0;">Fine-tuning ran long at full step size (learning rate), which may have erased the pretrained start.</p></div>
 <div class="card" style="gap:8px;"><div class="kicker">Easy task</div><p style="font-size:18px; line-height:1.45; margin:0;">Rebuilding small gaps teaches texture, which normal training learns within minutes anyway.</p></div>
 </div>
 
-<div class="card white mt" style="gap:8px; padding:16px 22px;"><div class="kicker">What Kišš & Hradiš (ICDAR 2024) found</div>
-<p style="font-size:17px; line-height:1.45; margin:0;">They pretrained text recognisers on unlabelled historical lines (handwritten Bentham papers and old printed books) with masked and contrastive methods, then fine-tuned with different amounts of labels. Pretraining clearly beat training from scratch. But a model first trained with labels on a <b>related</b> dataset (transfer learning) was about as good or better. So SSL is not a free win, and it needs a lot of unlabelled data. Our pilot did not even beat scratch, which points to our small scale. Phase 2 gives pretraining one bounded retry (E3) with a fixed stop date.</p></div>
+<div class="band white mt"><p>Kišš & Hradiš (slide 16) beat scratch with far more data; we did not even beat scratch, so scale is the likely cause. Phase 2 gives pretraining one bounded retry (E3).</p></div>
 
 <!-- 0:40 · Say: These three are our guesses for why pretraining did not help, and none is tested yet, so read them as the next checks. Scale: Lacuna Reconstruction pretrained on 750k lines, we used 30k. The other two are about how fine-tuning treats the pretrained weights and how easy the rebuild task is. Kišš and Hradiš: target-domain pretraining beats scratch, but struggles to beat transfer from a closely related labelled dataset; this is why supervised transfer is a mandatory baseline for us. -->
 
